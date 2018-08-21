@@ -1,0 +1,32 @@
+{
+  "name": "monkey-typescript",
+  "version": "1.0.0",
+  "main": "bin/index.js",
+  "repository": "git@github.com:r-tamura/monkey-typescript.git",
+  "author": "r-tamura <rtamura30@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "run-s build repl",
+    "repl": "node ./bin/main.js",
+    "build": "webpack",
+    "test": "ts-mocha src/*.test.ts",
+    "precommit": "pretty-quick --staged"
+  },
+  "devDependencies": {
+    "@types/mocha": "^5.2.5",
+    "@types/power-assert": "^1.5.0",
+    "mocha": "^5.2.0",
+    "npm-run-all": "^4.1.3",
+    "power-assert": "^1.6.0",
+    "prettier": "^1.14.2",
+    "pretty-quick": "^1.6.0",
+    "ts-loader": "^4.5.0",
+    "ts-mocha": "^2.0.0",
+    "typescript": "^3.0.1",
+    "webpack": "^4.17.0",
+    "webpack-cli": "^3.1.0"
+  },
+  "dependencies": {
+    "@types/node": "^10.7.1"
+  }
+}
