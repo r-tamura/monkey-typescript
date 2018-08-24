@@ -15,6 +15,16 @@ enum Tokens {
   // Operators
   ASSIGN = "=",
   PLUS = "+",
+  MINUS = "-",
+  BANG = "!",
+  ASTERISK = "*",
+  SLASH = "/",
+
+  LT = "<",
+  GT = ">",
+
+  EQ = "==",
+  NOT_EQ = "!=",
 
   // Delimiters
   COMMA = ",",
@@ -27,14 +37,24 @@ enum Tokens {
 
   // Keywords
   FUNCTION = "FUNCTION",
-  LET = "LET"
+  LET = "LET",
+  IF = "IF",
+  ELSE = "ELSE",
+  RETURN = "RETURN",
+  TRUE = "TRUE",
+  FALSE = "FALSE"
 }
 
 // デフォルト定義Identifier一覧
 // ユーザ定義Identifierとデフォルト定義の区別
 const keywords = new Map<string, Tokens>([
   ["fn", Tokens.FUNCTION],
-  ["let", Tokens.LET]
+  ["let", Tokens.LET],
+  ["if", Tokens.IF],
+  ["else", Tokens.ELSE],
+  ["return", Tokens.RETURN],
+  ["true", Tokens.TRUE],
+  ["false", Tokens.FALSE]
 ]);
 
 function lookupIdent(ident: string): Tokens {

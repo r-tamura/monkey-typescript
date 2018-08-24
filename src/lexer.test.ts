@@ -10,6 +10,16 @@ describe("Lexer", () => {
       x + y;
     };
     let result = add(five, ten);
+    !-/*5;
+    5 < 10 > 5;
+    if (5 < 10) {
+      return true;
+    } else {
+      return false;
+    }
+
+    10 == 10;
+    10 != 9;
     `;
 
     const tests: Array<{ expectedType: TokenType; expectedLiteral: string }> = [
@@ -51,6 +61,47 @@ describe("Lexer", () => {
       { expectedType: Tokens.COMMA, expectedLiteral: "," },
       { expectedType: Tokens.IDENT, expectedLiteral: "ten" },
       { expectedType: Tokens.RPAREN, expectedLiteral: ")" },
+      { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+
+      { expectedType: Tokens.BANG, expectedLiteral: "!" },
+      { expectedType: Tokens.MINUS, expectedLiteral: "-" },
+      { expectedType: Tokens.SLASH, expectedLiteral: "/" },
+      { expectedType: Tokens.ASTERISK, expectedLiteral: "*" },
+      { expectedType: Tokens.INT, expectedLiteral: "5" },
+      { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+
+      { expectedType: Tokens.INT, expectedLiteral: "5" },
+      { expectedType: Tokens.LT, expectedLiteral: "<" },
+      { expectedType: Tokens.INT, expectedLiteral: "10" },
+      { expectedType: Tokens.GT, expectedLiteral: ">" },
+      { expectedType: Tokens.INT, expectedLiteral: "5" },
+      { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+
+      { expectedType: Tokens.IF, expectedLiteral: "if" },
+      { expectedType: Tokens.LPAREN, expectedLiteral: "(" },
+      { expectedType: Tokens.INT, expectedLiteral: "5" },
+      { expectedType: Tokens.LT, expectedLiteral: "<" },
+      { expectedType: Tokens.INT, expectedLiteral: "10" },
+      { expectedType: Tokens.RPAREN, expectedLiteral: ")" },
+      { expectedType: Tokens.LBRACE, expectedLiteral: "{" },
+      { expectedType: Tokens.RETURN, expectedLiteral: "return" },
+      { expectedType: Tokens.TRUE, expectedLiteral: "true" },
+      { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+      { expectedType: Tokens.RBRACE, expectedLiteral: "}" },
+      { expectedType: Tokens.ELSE, expectedLiteral: "else" },
+      { expectedType: Tokens.LBRACE, expectedLiteral: "{" },
+      { expectedType: Tokens.RETURN, expectedLiteral: "return" },
+      { expectedType: Tokens.FALSE, expectedLiteral: "false" },
+      { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+      { expectedType: Tokens.RBRACE, expectedLiteral: "}" },
+
+      { expectedType: Tokens.INT, expectedLiteral: "10" },
+      { expectedType: Tokens.EQ, expectedLiteral: "==" },
+      { expectedType: Tokens.INT, expectedLiteral: "10" },
+      { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+      { expectedType: Tokens.INT, expectedLiteral: "10" },
+      { expectedType: Tokens.NOT_EQ, expectedLiteral: "!=" },
+      { expectedType: Tokens.INT, expectedLiteral: "9" },
       { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
 
       { expectedType: Tokens.EOF, expectedLiteral: "" }

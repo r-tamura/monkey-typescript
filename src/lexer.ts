@@ -35,7 +35,13 @@ class Lexer {
     this.skipWhiteSpace();
     switch (this.ch) {
       case "=":
-        tok = this.newToken(Tokens.ASSIGN, this.ch);
+        if (this.peekChar() === "=") {
+          const ch = this.ch;
+          this.readChar();
+          tok = this.newToken(Tokens.EQ, ch + this.ch);
+        } else {
+          tok = this.newToken(Tokens.ASSIGN, this.ch);
+        }
         break;
       case ";":
         tok = this.newToken(Tokens.SEMICOLON, this.ch);
@@ -51,6 +57,30 @@ class Lexer {
         break;
       case "+":
         tok = this.newToken(Tokens.PLUS, this.ch);
+        break;
+      case "-":
+        tok = this.newToken(Tokens.MINUS, this.ch);
+        break;
+      case "!":
+        if (this.peekChar() === "=") {
+          const ch = this.ch;
+          this.readChar();
+          tok = this.newToken(Tokens.NOT_EQ, ch + this.ch);
+        } else {
+          tok = this.newToken(Tokens.BANG, this.ch);
+        }
+        break;
+      case "/":
+        tok = this.newToken(Tokens.SLASH, this.ch);
+        break;
+      case "*":
+        tok = this.newToken(Tokens.ASTERISK, this.ch);
+        break;
+      case "<":
+        tok = this.newToken(Tokens.LT, this.ch);
+        break;
+      case ">":
+        tok = this.newToken(Tokens.GT, this.ch);
         break;
       case "{":
         tok = this.newToken(Tokens.LBRACE, this.ch);
@@ -83,6 +113,13 @@ class Lexer {
     }
     this.position = this.readPosition;
     this.readPosition += 1;
+  }
+
+  private peekChar(): string {
+    if (this.readPosition >= this.input.length) {
+      return "\0";
+    }
+    return this.input[this.readPosition];
   }
 
   private newToken(tokenType: TokenType, ch: string): Token {

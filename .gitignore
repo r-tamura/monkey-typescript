@@ -1,4 +1,7 @@
 
+# built result
+bin/
+
 # Created by https://www.gitignore.io/api/node,windows,visualstudiocode
 
 ### Node ###
