@@ -4,7 +4,6 @@
 import * as readline from "readline";
 import Lexer from "./lexer";
 import { Tokens } from "./token";
-import { removeListener } from "cluster";
 
 const PROMPT = ">> ";
 // https://nodejs.org/api/readline.html#readline_example_tiny_cli
