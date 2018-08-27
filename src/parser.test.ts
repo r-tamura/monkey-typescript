@@ -1,9 +1,9 @@
 import { Parser } from "./parser";
 import Lexer from "./lexer";
-import { Program, Statement, LetStatement } from "./ast";
+import * as ast from "./ast";
 import assert = require("power-assert");
 
-function testParse(input: string): Program {
+function testParse(input: string): ast.Program {
   const l = Lexer.of(input);
   const p = Parser.of(l);
   const program = p.parseProgram();
@@ -39,15 +39,42 @@ describe("Parser", () => {
       testLetStatement(stmt, tt.expectedIdentifier);
     });
   });
+
+  it("return statement", () => {
+    const input = `
+    return 5;
+    return 10;
+    return 993322;
+    `;
+    const program = testParse(input);
+
+    assert.notEqual(program, null, "parseProgram() returned null");
+    assert.equal(
+      program.statements.length,
+      3,
+      `program.Statements does not contain 3 statements. got=${
+        program.statements.length
+      }`
+    );
+
+    program.statements.forEach((stmt, i) => {
+      const returnStmt = stmt as ast.ReturnStatement;
+      assert.equal(
+        returnStmt.tokenLiteral(),
+        "return",
+        `returnStmt.tokenLiteral not 'return', got=${typeof returnStmt}`
+      );
+    });
+  });
 });
 
-function testLetStatement(s: Statement, name: string) {
+function testLetStatement(s: ast.Statement, name: string) {
   assert.equal(
     s.tokenLiteral(),
     "let",
     `s.tokenLiteral not 'let', got=${s.tokenLiteral()}`
   );
-  const letStmt = s as LetStatement;
+  const letStmt = s as ast.LetStatement;
   assert.equal(
     letStmt.name.value,
     name,

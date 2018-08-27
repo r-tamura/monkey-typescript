@@ -44,7 +44,27 @@ class LetStatement implements Statement, LetStatementProps {
   tokenLiteral(): string {
     return this.token.literal;
   }
+  statementNode() {}
+}
 
+interface ReturnStatementProps {
+  token?: Token;
+  returnValue?: Expression;
+}
+class ReturnStatement implements Statement, ReturnStatementProps {
+  public token: Token;
+  public returnValue: Expression;
+
+  static of({ token, returnValue }: ReturnStatementProps) {
+    const stmt = new ReturnStatement();
+    stmt.token = token;
+    stmt.returnValue = returnValue;
+    return stmt;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
   statementNode() {}
 }
 
@@ -69,4 +89,12 @@ class Identifier implements Expression, IdentifierProps {
   expressionNode() {}
 }
 
-export { Node, Statement, Expression, Program, LetStatement, Identifier };
+export {
+  Node,
+  Statement,
+  Expression,
+  Program,
+  LetStatement,
+  ReturnStatement,
+  Identifier
+};
