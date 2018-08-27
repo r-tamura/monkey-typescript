@@ -2,15 +2,32 @@ import { Parser } from "./parser";
 import Lexer from "./lexer";
 import * as ast from "./ast";
 import assert = require("power-assert");
-
-function testParse(input: string): ast.Program {
-  const l = Lexer.of(input);
-  const p = Parser.of(l);
-  const program = p.parseProgram();
-  return program;
-}
+import { Tokens } from "./token";
 
 describe("Parser", () => {
+  it("toString", () => {
+    const program = new ast.Program();
+    program.statements = [
+      ast.LetStatement.of({
+        token: { type: Tokens.LET, literal: "let" },
+        name: ast.Identifier.of({
+          token: { type: Tokens.LET, literal: "myVar" },
+          value: "myVar"
+        }),
+        value: ast.Identifier.of({
+          token: { type: Tokens.LET, literal: "anotherVar" },
+          value: "anotherVar"
+        })
+      })
+    ];
+
+    assert.equal(
+      program.toString(),
+      "let myVar = anotherVar;",
+      `program.toString() wrong. got=${program.toString()}`
+    );
+  });
+
   it("let statemet", () => {
     const input = `
     let x = 5;
@@ -66,6 +83,11 @@ describe("Parser", () => {
       );
     });
   });
+
+  it("identifier expression", () => {
+    const input = `foobar;`;
+    const program = testParse(input);
+  });
 });
 
 function testLetStatement(s: ast.Statement, name: string) {
@@ -85,4 +107,26 @@ function testLetStatement(s: ast.Statement, name: string) {
     name,
     `letStmt.tokenLiteral not '${name}'. got=${letStmt.name.tokenLiteral()}`
   );
+}
+
+function testParse(input: string): ast.Program {
+  const l = Lexer.of(input);
+  const p = Parser.of(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+  return program;
+}
+
+function checkParserErrors(p: Parser) {
+  const errors = p.getErrors();
+  if (errors.length === 0) {
+    return;
+  }
+
+  console.error(`Parser has ${errors.length} errors`);
+  errors.forEach(e => {
+    console.error(e);
+  });
+
+  assert.fail();
 }

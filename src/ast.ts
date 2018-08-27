@@ -2,6 +2,7 @@ import { Token } from "./token";
 
 interface Node {
   tokenLiteral(): string;
+  toString(): string;
 }
 
 interface Statement extends Node {
@@ -20,6 +21,13 @@ class Program implements Node {
       return this.statements[0].tokenLiteral();
     }
     return "";
+  }
+
+  toString(): string {
+    const buf = this.statements.reduce((acc, stmt) => {
+      return Buffer.concat([acc, Buffer.from(stmt.toString())]);
+    }, Buffer.allocUnsafe(0));
+    return buf.toString();
   }
 }
 
@@ -44,6 +52,13 @@ class LetStatement implements Statement, LetStatementProps {
   tokenLiteral(): string {
     return this.token.literal;
   }
+
+  toString(): string {
+    return `${this.tokenLiteral()} ${
+      this.name.value
+    } = ${this.value.toString()};`;
+  }
+
   statementNode() {}
 }
 
@@ -64,6 +79,37 @@ class ReturnStatement implements Statement, ReturnStatementProps {
 
   tokenLiteral(): string {
     return this.token.literal;
+  }
+
+  toString(): string {
+    return `${this.tokenLiteral()} ${this.returnValue.toString()};`;
+  }
+
+  statementNode() {}
+}
+
+interface ExpressionStatementProps {
+  token: Token; // the first token of the expression
+  expression: Expression;
+}
+class ExpressionStatement implements Statement, ExpressionStatement {
+  public token: Token;
+  public expression: Expression;
+  static of({ token, expression }: ExpressionStatementProps) {
+    const stmt = new ExpressionStatement();
+    stmt.token = token;
+    stmt.expression = expression;
+    return stmt;
+  }
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  tosString(): string {
+    if (this.expression) {
+      return this.expression.toString();
+    }
+    return "";
   }
   statementNode() {}
 }
@@ -86,6 +132,10 @@ class Identifier implements Expression, IdentifierProps {
     return this.value;
   }
 
+  toString(): string {
+    return this.value;
+  }
+
   expressionNode() {}
 }
 
@@ -96,5 +146,6 @@ export {
   Program,
   LetStatement,
   ReturnStatement,
+  ExpressionStatement,
   Identifier
 };

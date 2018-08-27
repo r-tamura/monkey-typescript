@@ -1,17 +1,20 @@
 import Lexer from "./lexer";
 import { Token, Tokens, TokenType } from "./token";
-import {
-  Program,
-  LetStatement,
-  Identifier,
-  Statement,
-  ReturnStatement
-} from "./ast";
+import * as ast from "./ast";
+
+type PrefixParseFn = () => ast.Expression;
+type InfixParseFn = (left: ast.Expression) => ast.Expression;
 
 class Parser {
   private l: Lexer;
   private curToken: Token;
   private peekToken: Token;
+
+  private errors: string[] = [];
+
+  // index signatureはaliasが使えない TokenType を string とする
+  private prefixParseFns: { [s: string]: PrefixParseFn };
+  private infixParseFns: { [s: string]: InfixParseFn };
 
   constructor(l: Lexer) {
     this.l = l;
@@ -23,8 +26,8 @@ class Parser {
     return new Parser(l);
   }
 
-  parseProgram(): Program {
-    const program = new Program();
+  parseProgram(): ast.Program {
+    const program = new ast.Program();
     program.statements = [];
 
     while (!this.curTokenIs(Tokens.EOF)) {
@@ -38,7 +41,11 @@ class Parser {
     return program;
   }
 
-  private parseStatement(): Statement {
+  getErrors(): string[] {
+    return this.errors;
+  }
+
+  private parseStatement(): ast.Statement {
     switch (this.curToken.type) {
       case Tokens.LET:
         return this.parseLetStatement();
@@ -49,13 +56,13 @@ class Parser {
     }
   }
 
-  private parseLetStatement(): LetStatement {
-    const stmt = LetStatement.of({ token: this.curToken });
+  private parseLetStatement(): ast.LetStatement {
+    const stmt = ast.LetStatement.of({ token: this.curToken });
     if (!this.expectPeek(Tokens.IDENT)) {
       return null;
     }
 
-    stmt.name = Identifier.of({
+    stmt.name = ast.Identifier.of({
       token: this.curToken,
       value: this.curToken.literal
     });
@@ -72,8 +79,8 @@ class Parser {
     return stmt;
   }
 
-  private parseReturnStatement(): ReturnStatement {
-    const returnStmt = ReturnStatement.of({ token: this.curToken });
+  private parseReturnStatement(): ast.ReturnStatement {
+    const returnStmt = ast.ReturnStatement.of({ token: this.curToken });
     this.nextToken();
 
     // TODO
@@ -104,6 +111,21 @@ class Parser {
 
   private peekTokenIs(t: TokenType): boolean {
     return this.peekToken.type === t;
+  }
+
+  private peekError(t: TokenType) {
+    this.errors = [
+      ...this.errors,
+      `expected next token to be ${t}, got ${this.peekToken.type} instead`
+    ];
+  }
+
+  private registerPrefix(token: TokenType, fn: PrefixParseFn) {
+    this.prefixParseFns[token] = fn;
+  }
+
+  private registerInfix(token: TokenType, fn: InfixParseFn) {
+    this.infixParseFns[token] = fn;
   }
 }
 
