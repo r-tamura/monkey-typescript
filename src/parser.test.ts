@@ -87,6 +87,24 @@ describe("Parser", () => {
   it("identifier expression", () => {
     const input = `foobar;`;
     const program = testParse(input);
+
+    assert.equal(
+      program.statements.length,
+      1,
+      `program has not enough statement. got=${program.statements.length}`
+    );
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const ident = stmt.expression as ast.Identifier;
+    assert.equal(
+      ident.value,
+      "foobar",
+      `ident.value not foobar, got=${ident.value}`
+    );
+    assert.equal(
+      ident.tokenLiteral(),
+      "foobar",
+      `ident.tokenLiteral not foobar, got=${ident.tokenLiteral()}`
+    );
   });
 });
 

@@ -5,6 +5,16 @@ import * as ast from "./ast";
 type PrefixParseFn = () => ast.Expression;
 type InfixParseFn = (left: ast.Expression) => ast.Expression;
 
+enum Precedences {
+  LOWEST = 1,
+  EQUALS,
+  LESSGREATER,
+  SUM,
+  PRODUCT,
+  PREFIX,
+  CALL
+}
+
 class Parser {
   private l: Lexer;
   private curToken: Token;
@@ -20,6 +30,9 @@ class Parser {
     this.l = l;
     this.nextToken();
     this.nextToken();
+
+    this.prefixParseFns = {};
+    this.registerPrefix(Tokens.IDENT, this.parseIdentifier);
   }
 
   static of(l: Lexer) {
@@ -52,7 +65,7 @@ class Parser {
       case Tokens.RETURN:
         return this.parseReturnStatement();
       default:
-        return null;
+        return this.parseExpressionStatement();
     }
   }
 
@@ -90,6 +103,35 @@ class Parser {
 
     return returnStmt;
   }
+
+  private parseExpressionStatement(): ast.ExpressionStatement {
+    const stmt = ast.ExpressionStatement.of({
+      token: this.curToken,
+      expression: this.parseExpression(Precedences.LOWEST)
+    });
+
+    if (this.peekTokenIs(Tokens.SEMICOLON)) {
+      this.nextToken();
+    }
+
+    return stmt;
+  }
+
+  private parseExpression(precedence: number): ast.Expression {
+    const prefix = this.prefixParseFns[this.curToken.type];
+    if (!prefix) {
+      return null;
+    }
+    const leftExp = prefix();
+    return leftExp;
+  }
+
+  parseIdentifier = (): ast.Expression => {
+    return ast.Identifier.of({
+      token: this.curToken,
+      value: this.curToken.literal
+    });
+  };
 
   private nextToken() {
     this.curToken = this.peekToken;

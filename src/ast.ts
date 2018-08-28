@@ -89,8 +89,8 @@ class ReturnStatement implements Statement, ReturnStatementProps {
 }
 
 interface ExpressionStatementProps {
-  token: Token; // the first token of the expression
-  expression: Expression;
+  token?: Token; // the first token of the expression
+  expression?: Expression;
 }
 class ExpressionStatement implements Statement, ExpressionStatement {
   public token: Token;
