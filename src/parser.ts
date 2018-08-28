@@ -33,6 +33,9 @@ class Parser {
 
     this.prefixParseFns = {};
     this.registerPrefix(Tokens.IDENT, this.parseIdentifier);
+    this.registerPrefix(Tokens.INT, this.parseIntegerLiteral);
+    this.registerPrefix(Tokens.BANG, this.parsePrefixExpression);
+    this.registerPrefix(Tokens.MINUS, this.parsePrefixExpression);
   }
 
   static of(l: Lexer) {
@@ -117,21 +120,53 @@ class Parser {
     return stmt;
   }
 
+  private noPrefixParseFnError(t: TokenType) {
+    this.errors.push(`no prefix function for ${t} found`);
+  }
+
   private parseExpression(precedence: number): ast.Expression {
     const prefix = this.prefixParseFns[this.curToken.type];
     if (!prefix) {
+      this.noPrefixParseFnError(this.curToken.type);
       return null;
     }
     const leftExp = prefix();
     return leftExp;
   }
 
-  parseIdentifier = (): ast.Expression => {
+  private parseIdentifier = (): ast.Expression => {
     return ast.Identifier.of({
       token: this.curToken,
       value: this.curToken.literal
     });
   };
+
+  private parseIntegerLiteral = (): ast.Expression => {
+    const lit = ast.IntegerLiteral.of({
+      token: this.curToken
+    });
+
+    try {
+      const value = parseInt(this.curToken.literal, 10);
+      lit.value = value;
+      return lit;
+    } catch {
+      this.errors.push(`could not parse ${this.curToken.literal} as integer`);
+      return null;
+    }
+  };
+
+  private parsePrefixExpression = (): ast.Expression => {
+    const exp = ast.PrefixExpression.of({
+      token: this.curToken,
+      operator: this.curToken.literal
+    });
+    this.nextToken();
+    exp.right = this.parseExpression(Precedences.PREFIX);
+    return exp;
+  };
+
+  parsePrefix;
 
   private nextToken() {
     this.curToken = this.peekToken;

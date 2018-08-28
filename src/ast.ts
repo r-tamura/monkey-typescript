@@ -115,6 +115,7 @@ class ExpressionStatement implements Statement, ExpressionStatement {
 }
 
 interface IdentifierProps {
+  token?: Token;
   value?: string;
 }
 class Identifier implements Expression, IdentifierProps {
@@ -139,6 +140,61 @@ class Identifier implements Expression, IdentifierProps {
   expressionNode() {}
 }
 
+interface IntegerLiteralProps {
+  token?: Token;
+  value?: number;
+}
+class IntegerLiteral implements Expression, IntegerLiteral {
+  public token: Token;
+  public value: number;
+
+  static of({ token, value }: IntegerLiteralProps): IntegerLiteral {
+    const literal = new IntegerLiteral();
+    literal.token = token;
+    literal.value = value;
+    return literal;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return this.value.toString(10);
+  }
+
+  expressionNode() {}
+}
+
+interface PrefixExpressionProps {
+  token?: Token;
+  operator?: string;
+  right?: Expression;
+}
+class PrefixExpression implements Expression, PrefixExpressionProps {
+  public token: Token;
+  public operator: string;
+  public right: Expression;
+
+  static of({ token, operator, right }: PrefixExpressionProps) {
+    const exp = new PrefixExpression();
+    exp.token = token;
+    exp.operator = operator;
+    exp.right = right;
+    return exp;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return `(${this.operator}${this.right})`;
+  }
+
+  expressionNode() {}
+}
+
 export {
   Node,
   Statement,
@@ -147,5 +203,7 @@ export {
   LetStatement,
   ReturnStatement,
   ExpressionStatement,
-  Identifier
+  Identifier,
+  IntegerLiteral,
+  PrefixExpression
 };

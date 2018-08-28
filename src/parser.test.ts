@@ -106,6 +106,49 @@ describe("Parser", () => {
       `ident.tokenLiteral not foobar, got=${ident.tokenLiteral()}`
     );
   });
+
+  it("integer literal", () => {
+    const input = `5;`;
+    const program = testParse(input);
+
+    assert.equal(
+      program.statements.length,
+      1,
+      `program has not enough statement. got=${program.statements.length}`
+    );
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const literal = stmt.expression as ast.IntegerLiteral;
+    assert.equal(literal.value, 5, `ident.value not 5, got=${literal.value}`);
+    assert.equal(
+      literal.tokenLiteral(),
+      "5",
+      `ident.tokenLiteral not 5, got=${literal.tokenLiteral()}`
+    );
+  });
+
+  it("prefix expression", () => {
+    const tests = [
+      { input: "!5;", operator: "!", integerValue: 5 },
+      { input: "-15;", operator: "-", integerValue: 15 }
+    ];
+
+    tests.forEach(tt => {
+      const program = testParse(tt.input);
+      assert.equal(
+        program.statements.length,
+        1,
+        `program has not enough statement. got=${program.statements.length}`
+      );
+      const stmt = program.statements[0] as ast.ExpressionStatement;
+      const exp = stmt.expression as ast.PrefixExpression;
+      assert.equal(
+        exp.operator,
+        tt.operator,
+        `exp.Operator not '${tt.operator}'. got=${exp.operator}`
+      );
+      testIntegerLiteral(exp.right, tt.integerValue);
+    });
+  });
 });
 
 function testLetStatement(s: ast.Statement, name: string) {
@@ -124,6 +167,20 @@ function testLetStatement(s: ast.Statement, name: string) {
     letStmt.name.tokenLiteral(),
     name,
     `letStmt.tokenLiteral not '${name}'. got=${letStmt.name.tokenLiteral()}`
+  );
+}
+
+function testIntegerLiteral(i: ast.Expression, value: number) {
+  const integ = i as ast.IntegerLiteral;
+  assert.equal(
+    integ.value,
+    value,
+    `integ.Value not ${value}. got=${integ.value}`
+  );
+  assert.equal(
+    integ.tokenLiteral(),
+    value.toString(10),
+    `integ.tokenLiteral not ${value.toString(10)}. got=${integ.tokenLiteral()}`
   );
 }
 
