@@ -195,6 +195,38 @@ class PrefixExpression implements Expression, PrefixExpressionProps {
   expressionNode() {}
 }
 
+interface InfixProps {
+  token?: Token;
+  left?: Expression;
+  operator?: string;
+  right?: Expression;
+}
+class InfixExpression implements Expression, InfixProps {
+  public token: Token;
+  public left: Expression;
+  public operator: string;
+  public right: Expression;
+
+  static of({ token, left, operator, right }: InfixProps) {
+    const exp = new InfixExpression();
+    exp.token = token;
+    exp.left = left;
+    exp.operator = operator;
+    exp.right = right;
+    return exp;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return `(${this.left} ${this.operator} ${this.right})`;
+  }
+
+  expressionNode() {}
+}
+
 export {
   Node,
   Statement,
@@ -205,5 +237,6 @@ export {
   ExpressionStatement,
   Identifier,
   IntegerLiteral,
-  PrefixExpression
+  PrefixExpression,
+  InfixExpression
 };

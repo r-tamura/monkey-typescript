@@ -149,6 +149,42 @@ describe("Parser", () => {
       testIntegerLiteral(exp.right, tt.integerValue);
     });
   });
+
+  it("infix expression", () => {
+    const tests: {
+      input: string
+      leftValue: number
+      operator: string
+      rightValue: number
+    }[] = [
+      {input: "5 + 5;", leftValue: 5, operator: "+", rightValue: 5},
+      {input: "5 - 5;", leftValue: 5, operator: "-", rightValue: 5},
+      {input: "5 * 5;", leftValue: 5, operator: "*", rightValue: 5},
+      {input: "5 / 5;", leftValue: 5, operator: "/", rightValue: 5},
+      {input: "5 > 5;", leftValue: 5, operator: ">", rightValue: 5},
+      {input: "5 < 5;", leftValue: 5, operator: "<", rightValue: 5},
+      {input: "5 == 5;", leftValue: 5, operator: "==", rightValue: 5},
+      {input: "5 != 5;", leftValue: 5, operator: "!=", rightValue: 5},
+    ]
+
+    tests.forEach(tt => {
+      const program = testParse(tt.input)
+      assert.equal(
+        program.statements.length,
+        1,
+        `program has not enough statement. got=${program.statements.length}`
+      );
+      const stmt = program.statements[0] as ast.ExpressionStatement;
+      const exp = stmt.expression as ast.InfixExpression;
+      testIntegerLiteral(exp.right, tt.leftValue);
+      assert.equal(
+        exp.operator,
+        tt.operator,
+        `exp.Operator not '${tt.operator}'. got=${exp.operator}`
+      );
+      testIntegerLiteral(exp.right, tt.rightValue);
+    })
+  })
 });
 
 function testLetStatement(s: ast.Statement, name: string) {

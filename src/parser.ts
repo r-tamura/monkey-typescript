@@ -15,6 +15,20 @@ enum Precedences {
   CALL
 }
 
+const PrecedenceMap = new Map<TokenType, number>([
+  [Tokens.EQ, Precedences.EQUALS],
+  [Tokens.NOT_EQ, Precedences.EQUALS],
+
+  [Tokens.LT, Precedences.LESSGREATER],
+  [Tokens.GT, Precedences.LESSGREATER],
+
+  [Tokens.PLUS, Precedences.SUM],
+  [Tokens.MINUS, Precedences.SUM],
+
+  [Tokens.ASTERISK, Precedences.PRODUCT],
+  [Tokens.SLASH, Precedences.PRODUCT]
+]);
+
 class Parser {
   private l: Lexer;
   private curToken: Token;
@@ -36,6 +50,16 @@ class Parser {
     this.registerPrefix(Tokens.INT, this.parseIntegerLiteral);
     this.registerPrefix(Tokens.BANG, this.parsePrefixExpression);
     this.registerPrefix(Tokens.MINUS, this.parsePrefixExpression);
+
+    this.infixParseFns = {};
+    this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
+    this.registerInfix(Tokens.MINUS, this.parseInfixExpression);
+    this.registerInfix(Tokens.ASTERISK, this.parseInfixExpression);
+    this.registerInfix(Tokens.SLASH, this.parseInfixExpression);
+    this.registerInfix(Tokens.LT, this.parseInfixExpression);
+    this.registerInfix(Tokens.GT, this.parseInfixExpression);
+    this.registerInfix(Tokens.EQ, this.parseInfixExpression);
+    this.registerInfix(Tokens.NOT_EQ, this.parseInfixExpression);
   }
 
   static of(l: Lexer) {
@@ -130,7 +154,21 @@ class Parser {
       this.noPrefixParseFnError(this.curToken.type);
       return null;
     }
-    const leftExp = prefix();
+    let leftExp = prefix();
+
+    while (
+      !this.peekTokenIs(Tokens.SEMICOLON) &&
+      precedence < this.peekPrecedence()
+    ) {
+      // Suck in
+      const infix = this.infixParseFns[this.curToken.type];
+      if (!infix) {
+        return leftExp;
+      }
+
+      this.nextToken();
+      leftExp = infix(leftExp);
+    }
     return leftExp;
   }
 
@@ -166,7 +204,18 @@ class Parser {
     return exp;
   };
 
-  parsePrefix;
+  private parseInfixExpression = (left: ast.Expression): ast.Expression => {
+    const exp = ast.InfixExpression.of({
+      token: this.curToken,
+      left: left,
+      operator: this.curToken.literal
+    });
+    const precedence = this.curPrecedence();
+    this.nextToken();
+    exp.right = this.parseExpression(precedence);
+
+    return exp;
+  };
 
   private nextToken() {
     this.curToken = this.peekToken;
@@ -188,6 +237,14 @@ class Parser {
 
   private peekTokenIs(t: TokenType): boolean {
     return this.peekToken.type === t;
+  }
+
+  private curPrecedence(): number {
+    return PrecedenceMap.get(this.curToken.type);
+  }
+
+  private peekPrecedence(): number {
+    return PrecedenceMap.get(this.peekToken.type);
   }
 
   private peekError(t: TokenType) {
