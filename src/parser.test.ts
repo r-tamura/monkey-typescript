@@ -230,6 +230,15 @@ function testLetStatement(s: ast.Statement, name: string) {
   );
 }
 
+function testLiteralExpression(exp: ast.Expression, expected: any) {
+  switch (typeof expected) {
+    case 'number':
+      return testIntegerLiteral(exp, expected)
+    case 'string':
+      return testIdentifier(exp, expected)
+  }
+}
+
 function testIntegerLiteral(i: ast.Expression, value: number) {
   const integ = i as ast.IntegerLiteral;
   assert.equal(
@@ -242,6 +251,19 @@ function testIntegerLiteral(i: ast.Expression, value: number) {
     value.toString(10),
     `integ.tokenLiteral not ${value.toString(10)}. got=${integ.tokenLiteral()}`
   );
+}
+
+function testIdentifier(exp: ast.Expression, value: string) {
+  const ident = exp as (ast.Identifier)
+  assert.equal(ident.value, value, `ident.Value not ${value}. got=${ident.value}`)
+  assert.equal(ident.tokenLiteral(), value, `ident.tokenLiteral not ${value}. got=${ident.tokenLiteral()}`)
+}
+
+function testInfixExpression(exp: ast.Expression, left: any, operator: string, right: any) {
+  const opExp = exp as ast.InfixExpression
+  testLiteralExpression(opExp.left, left)
+  assert.equal(opExp.operator, operator, `opExp.operator not ${operator}. got=${opExp.operator}`)
+  testLiteralExpression(opExp.right, right)
 }
 
 function testParse(input: string): ast.Program {
