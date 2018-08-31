@@ -152,23 +152,23 @@ describe("Parser", () => {
 
   it("infix expression", () => {
     const tests: {
-      input: string
-      leftValue: number
-      operator: string
-      rightValue: number
+      input: string;
+      leftValue: number;
+      operator: string;
+      rightValue: number;
     }[] = [
-      {input: "5 + 5;", leftValue: 5, operator: "+", rightValue: 5},
-      {input: "5 - 5;", leftValue: 5, operator: "-", rightValue: 5},
-      {input: "5 * 5;", leftValue: 5, operator: "*", rightValue: 5},
-      {input: "5 / 5;", leftValue: 5, operator: "/", rightValue: 5},
-      {input: "5 > 5;", leftValue: 5, operator: ">", rightValue: 5},
-      {input: "5 < 5;", leftValue: 5, operator: "<", rightValue: 5},
-      {input: "5 == 5;", leftValue: 5, operator: "==", rightValue: 5},
-      {input: "5 != 5;", leftValue: 5, operator: "!=", rightValue: 5},
-    ]
+      { input: "5 + 5;", leftValue: 5, operator: "+", rightValue: 5 },
+      { input: "5 - 5;", leftValue: 5, operator: "-", rightValue: 5 },
+      { input: "5 * 5;", leftValue: 5, operator: "*", rightValue: 5 },
+      { input: "5 / 5;", leftValue: 5, operator: "/", rightValue: 5 },
+      { input: "5 > 5;", leftValue: 5, operator: ">", rightValue: 5 },
+      { input: "5 < 5;", leftValue: 5, operator: "<", rightValue: 5 },
+      { input: "5 == 5;", leftValue: 5, operator: "==", rightValue: 5 },
+      { input: "5 != 5;", leftValue: 5, operator: "!=", rightValue: 5 }
+    ];
 
     tests.forEach(tt => {
-      const program = testParse(tt.input)
+      const program = testParse(tt.input);
       assert.equal(
         program.statements.length,
         1,
@@ -183,8 +183,32 @@ describe("Parser", () => {
         `exp.Operator not '${tt.operator}'. got=${exp.operator}`
       );
       testIntegerLiteral(exp.right, tt.rightValue);
-    })
-  })
+    });
+  });
+
+  it("operator precedence", () => {
+    const tests: {
+      input: string;
+      expected: string;
+    }[] = [
+      { input: "-a * b", expected: "((-a) * b)" },
+      { input: "!-a", expected: "(!(-a))" },
+      { input: "a + b + c", expected: "((a + b) + c)" },
+      { input: "a + b / c", expected: "(a + (b / c))" },
+      {
+        input: "a + b * c + d / e - f",
+        expected: "(((a + (b * c)) + (d / e)) - f)"
+      },
+      { input: "3 + 4; -5 * 5", expected: "(3 + 4)((-5) * 5)" },
+      { input: "5 > 4 == 3 < 4", expected: "((5 > 4) == (3 < 4))" }
+    ];
+
+    tests.forEach(tt => {
+      const program = testParse(tt.input);
+      const actual = program.toString();
+      assert.equal(actual, tt.expected);
+    });
+  });
 });
 
 function testLetStatement(s: ast.Statement, name: string) {

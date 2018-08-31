@@ -161,7 +161,7 @@ class Parser {
       precedence < this.peekPrecedence()
     ) {
       // Suck in
-      const infix = this.infixParseFns[this.curToken.type];
+      const infix = this.infixParseFns[this.peekToken.type];
       if (!infix) {
         return leftExp;
       }

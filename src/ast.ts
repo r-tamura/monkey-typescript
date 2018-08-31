@@ -105,7 +105,7 @@ class ExpressionStatement implements Statement, ExpressionStatement {
     return this.token.literal;
   }
 
-  tosString(): string {
+  toString(): string {
     if (this.expression) {
       return this.expression.toString();
     }
