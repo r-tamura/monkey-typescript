@@ -314,6 +314,39 @@ class IfExpression implements Expression, IfExpression {
   expressionNode() {}
 }
 
+interface FunctionLiteralProps {
+  token?: Token;
+  parameters?: Identifier[];
+  body?: BlockStatement;
+}
+class FunctionLiteral implements Expression, FunctionLiteralProps {
+  token: Token;
+  parameters: Identifier[];
+  body: BlockStatement;
+
+  static of({ token, parameters, body }: FunctionLiteralProps) {
+    const fn = new FunctionLiteral();
+    fn.token = token;
+    fn.parameters = parameters;
+    fn.body = body;
+    return fn;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+  toString(): string {
+    let res = "";
+    const params = this.parameters.reduce((acc, v) => acc + ", " + v, "");
+
+    res += this.tokenLiteral() + "(" + params + ") " + this.body.toString();
+
+    return res;
+  }
+
+  expressionNode() {}
+}
+
 export {
   Node,
   Statement,
@@ -328,5 +361,6 @@ export {
   Boolean,
   PrefixExpression,
   InfixExpression,
-  IfExpression
+  IfExpression,
+  FunctionLiteral
 };

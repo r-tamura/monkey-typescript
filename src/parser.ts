@@ -54,6 +54,7 @@ class Parser {
     this.registerPrefix(Tokens.FALSE, this.parseBoolean);
     this.registerPrefix(Tokens.LPAREN, this.parseGroupExpression);
     this.registerPrefix(Tokens.IF, this.parseIfExpression);
+    this.registerPrefix(Tokens.FUNCTION, this.parseFunctionLiteral);
 
     this.infixParseFns = {};
     this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
@@ -286,6 +287,49 @@ class Parser {
 
     return exp;
   };
+
+  private parseFunctionLiteral = (): ast.Expression => {
+    const fn = ast.FunctionLiteral.of({ token: this.curToken });
+
+    if (!this.expectPeek(Tokens.LPAREN)) {
+      return null;
+    }
+
+    fn.parameters = this.parseFunctionParameters();
+
+    if (!this.expectPeek(Tokens.LBRACE)) {
+      return null;
+    }
+
+    fn.body = this.parseBlockStatement();
+
+    return fn;
+  };
+
+  private parseFunctionParameters(): ast.Identifier[] {
+    const identifiers = [];
+
+    if (this.peekTokenIs(Tokens.RPAREN)) {
+      this.nextToken();
+      return identifiers;
+    }
+
+    this.nextToken();
+
+    identifiers.push(this.parseIdentifier());
+
+    while (this.peekTokenIs(Tokens.COMMA)) {
+      this.nextToken();
+      this.nextToken();
+      identifiers.push(this.parseIdentifier());
+    }
+
+    if (!this.expectPeek(Tokens.RPAREN)) {
+      return null;
+    }
+
+    return identifiers;
+  }
 
   private nextToken() {
     this.curToken = this.peekToken;

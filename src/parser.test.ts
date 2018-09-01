@@ -246,6 +246,20 @@ describe("Parser", () => {
     testIdentifier(consequence.expression, "x");
     assert.equal(exp.alternative, null);
   });
+
+  it("function literal", () => {
+    const input = `fn(x, y) { x + y; }`;
+    const program = testParse(input);
+    assert.equal(program.statements.length, 1);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const func = stmt.expression as ast.FunctionLiteral;
+    assert.equal(func.parameters.length, 2);
+    testIdentifier(func.parameters[0], "x");
+    testIdentifier(func.parameters[1], "y");
+
+    const bodyStmt = func.body.statements[0] as ast.ExpressionStatement;
+    testInfixExpression(bodyStmt.expression, "x", "+", "y");
+  });
 });
 
 function testLetStatement(s: ast.Statement, name: string) {
