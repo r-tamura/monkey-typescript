@@ -166,6 +166,27 @@ class IntegerLiteral implements Expression, IntegerLiteral {
   expressionNode() {}
 }
 
+interface BooleanProps {
+  token?: Token
+  value?: boolean
+}
+class Boolean implements Expression, BooleanProps {
+  token: Token
+  value: boolean
+
+  static of({ token, value}: BooleanProps): Boolean {
+    const bool = new Boolean()
+    bool.token = token
+    bool.value = value
+    return bool
+  }
+
+  tokenLiteral(): string { return this.token.literal }
+  toString(): string { return this.token.literal }
+  
+  expressionNode() {}
+}
+
 interface PrefixExpressionProps {
   token?: Token;
   operator?: string;
@@ -237,6 +258,7 @@ export {
   ExpressionStatement,
   Identifier,
   IntegerLiteral,
+  Boolean,
   PrefixExpression,
   InfixExpression
 };

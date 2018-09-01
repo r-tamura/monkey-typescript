@@ -3,6 +3,8 @@ import Lexer from "./lexer";
 import * as ast from "./ast";
 import assert = require("power-assert");
 import { Tokens } from "./token";
+import { equal } from "assert";
+import { WSASERVICE_NOT_FOUND } from "constants";
 
 describe("Parser", () => {
   it("toString", () => {
@@ -153,9 +155,9 @@ describe("Parser", () => {
   it("infix expression", () => {
     const tests: {
       input: string;
-      leftValue: number;
+      leftValue: any;
       operator: string;
-      rightValue: number;
+      rightValue: any;
     }[] = [
       { input: "5 + 5;", leftValue: 5, operator: "+", rightValue: 5 },
       { input: "5 - 5;", leftValue: 5, operator: "-", rightValue: 5 },
@@ -164,7 +166,9 @@ describe("Parser", () => {
       { input: "5 > 5;", leftValue: 5, operator: ">", rightValue: 5 },
       { input: "5 < 5;", leftValue: 5, operator: "<", rightValue: 5 },
       { input: "5 == 5;", leftValue: 5, operator: "==", rightValue: 5 },
-      { input: "5 != 5;", leftValue: 5, operator: "!=", rightValue: 5 }
+      { input: "5 != 5;", leftValue: 5, operator: "!=", rightValue: 5 },
+      { input: "true == true;", leftValue: true, operator: "==", rightValue: true },
+      { input: "false != true;", leftValue: false, operator: "!=", rightValue: true }
     ];
 
     tests.forEach(tt => {
@@ -176,13 +180,13 @@ describe("Parser", () => {
       );
       const stmt = program.statements[0] as ast.ExpressionStatement;
       const exp = stmt.expression as ast.InfixExpression;
-      testIntegerLiteral(exp.right, tt.leftValue);
+      testLiteralExpression(exp.right, tt.leftValue);
       assert.equal(
         exp.operator,
         tt.operator,
         `exp.Operator not '${tt.operator}'. got=${exp.operator}`
       );
-      testIntegerLiteral(exp.right, tt.rightValue);
+      testLiteralExpression(exp.right, tt.rightValue);
     });
   });
 
@@ -200,7 +204,11 @@ describe("Parser", () => {
         expected: "(((a + (b * c)) + (d / e)) - f)"
       },
       { input: "3 + 4; -5 * 5", expected: "(3 + 4)((-5) * 5)" },
-      { input: "5 > 4 == 3 < 4", expected: "((5 > 4) == (3 < 4))" }
+      { input: "5 > 4 == 3 < 4", expected: "((5 > 4) == (3 < 4))" },
+      {input: "true", expected: "true"},
+      {input: "false", expected: "false"},
+      {input: "3 > 5 == false", expected: "((3 > 5) == false)"},
+      {input: "3 < 5 == true", expected: "((3 < 5) == true)"}
     ];
 
     tests.forEach(tt => {
@@ -209,6 +217,7 @@ describe("Parser", () => {
       assert.equal(actual, tt.expected);
     });
   });
+  
 });
 
 function testLetStatement(s: ast.Statement, name: string) {
@@ -231,7 +240,12 @@ function testLetStatement(s: ast.Statement, name: string) {
 }
 
 function testLiteralExpression(exp: ast.Expression, expected: any) {
+  // Memo:
+  // testBoolean, testIntegerLiteral等は値を返さないが
+  // breakを書くのが煩わしいためにreturnしている
   switch (typeof expected) {
+    case 'boolean':
+      return testBoolean(exp, expected)
     case 'number':
       return testIntegerLiteral(exp, expected)
     case 'string':
@@ -257,6 +271,12 @@ function testIdentifier(exp: ast.Expression, value: string) {
   const ident = exp as (ast.Identifier)
   assert.equal(ident.value, value, `ident.Value not ${value}. got=${ident.value}`)
   assert.equal(ident.tokenLiteral(), value, `ident.tokenLiteral not ${value}. got=${ident.tokenLiteral()}`)
+}
+
+function testBoolean(exp: ast.Expression, value: boolean) {
+  const bo = exp as (ast.Boolean)
+  assert.equal(bo.value, value, `bo.Value not ${value}. got=${bo.value}`)
+  assert.equal(bo.tokenLiteral(), value.toString())
 }
 
 function testInfixExpression(exp: ast.Expression, left: any, operator: string, right: any) {

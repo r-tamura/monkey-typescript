@@ -41,8 +41,8 @@ enum Tokens {
   IF = "IF",
   ELSE = "ELSE",
   RETURN = "RETURN",
-  TRUE = "TRUE",
-  FALSE = "FALSE"
+  TRUE = "true",
+  FALSE = "false"
 }
 
 // デフォルト定義Identifier一覧

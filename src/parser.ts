@@ -50,6 +50,8 @@ class Parser {
     this.registerPrefix(Tokens.INT, this.parseIntegerLiteral);
     this.registerPrefix(Tokens.BANG, this.parsePrefixExpression);
     this.registerPrefix(Tokens.MINUS, this.parsePrefixExpression);
+    this.registerPrefix(Tokens.TRUE, this.parseBoolean)
+    this.registerPrefix(Tokens.FALSE, this.parseBoolean)
 
     this.infixParseFns = {};
     this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
@@ -193,6 +195,11 @@ class Parser {
       return null;
     }
   };
+
+  private parseBoolean = (): ast.Expression => {
+    console.log(this.curToken, this.curTokenIs(Tokens.TRUE))
+    return ast.Boolean.of({token: this.curToken, value: this.curTokenIs(Tokens.TRUE)})
+  }
 
   private parsePrefixExpression = (): ast.Expression => {
     const exp = ast.PrefixExpression.of({
