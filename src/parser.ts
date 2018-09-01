@@ -50,8 +50,9 @@ class Parser {
     this.registerPrefix(Tokens.INT, this.parseIntegerLiteral);
     this.registerPrefix(Tokens.BANG, this.parsePrefixExpression);
     this.registerPrefix(Tokens.MINUS, this.parsePrefixExpression);
-    this.registerPrefix(Tokens.TRUE, this.parseBoolean)
-    this.registerPrefix(Tokens.FALSE, this.parseBoolean)
+    this.registerPrefix(Tokens.TRUE, this.parseBoolean);
+    this.registerPrefix(Tokens.FALSE, this.parseBoolean);
+    this.registerPrefix(Tokens.LPAREN, this.parseGroupExpression);
 
     this.infixParseFns = {};
     this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
@@ -197,9 +198,11 @@ class Parser {
   };
 
   private parseBoolean = (): ast.Expression => {
-    console.log(this.curToken, this.curTokenIs(Tokens.TRUE))
-    return ast.Boolean.of({token: this.curToken, value: this.curTokenIs(Tokens.TRUE)})
-  }
+    return ast.Boolean.of({
+      token: this.curToken,
+      value: this.curTokenIs(Tokens.TRUE)
+    });
+  };
 
   private parsePrefixExpression = (): ast.Expression => {
     const exp = ast.PrefixExpression.of({
@@ -208,6 +211,18 @@ class Parser {
     });
     this.nextToken();
     exp.right = this.parseExpression(Precedences.PREFIX);
+    return exp;
+  };
+
+  private parseGroupExpression = (): ast.Expression => {
+    this.nextToken();
+
+    const exp = this.parseExpression(Precedences.LOWEST);
+
+    if (!this.expectPeek(Tokens.RPAREN)) {
+      return null;
+    }
+
     return exp;
   };
 
