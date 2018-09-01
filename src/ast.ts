@@ -1,4 +1,5 @@
 import { Token } from "./token";
+import { OutgoingMessage } from "http";
 
 interface Node {
   tokenLiteral(): string;
@@ -29,6 +30,31 @@ class Program implements Node {
     }, Buffer.allocUnsafe(0));
     return buf.toString();
   }
+}
+
+interface BlockStatementProps {
+  token?: Token; // {
+  statements?: Statement[];
+}
+class BlockStatement implements Statement, BlockStatementProps {
+  token: Token;
+  statements: Statement[];
+
+  static of({ token, statements }: BlockStatementProps) {
+    const stmt = new BlockStatement();
+    stmt.token = token;
+    stmt.statements = statements;
+    return stmt;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+  toString(): string {
+    return this.statements.reduce((acc, v) => acc + v.toString(), "");
+  }
+
+  statementNode() {}
 }
 
 interface LetStatementProps {
@@ -167,23 +193,27 @@ class IntegerLiteral implements Expression, IntegerLiteral {
 }
 
 interface BooleanProps {
-  token?: Token
-  value?: boolean
+  token?: Token;
+  value?: boolean;
 }
 class Boolean implements Expression, BooleanProps {
-  token: Token
-  value: boolean
+  token: Token;
+  value: boolean;
 
-  static of({ token, value}: BooleanProps): Boolean {
-    const bool = new Boolean()
-    bool.token = token
-    bool.value = value
-    return bool
+  static of({ token, value }: BooleanProps): Boolean {
+    const bool = new Boolean();
+    bool.token = token;
+    bool.value = value;
+    return bool;
   }
 
-  tokenLiteral(): string { return this.token.literal }
-  toString(): string { return this.token.literal }
-  
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+  toString(): string {
+    return this.token.literal;
+  }
+
   expressionNode() {}
 }
 
@@ -248,11 +278,48 @@ class InfixExpression implements Expression, InfixProps {
   expressionNode() {}
 }
 
+interface IfExpressionProps {
+  token?: Token;
+  condition?: Expression;
+  consequence?: BlockStatement;
+  alternative?: BlockStatement;
+}
+class IfExpression implements Expression, IfExpression {
+  token: Token;
+  condition: Expression;
+  consequence: BlockStatement;
+  alternative: BlockStatement;
+
+  static of({ token, condition, consequence, alternative }: IfExpressionProps) {
+    const ifexp = new IfExpression();
+    ifexp.token = token;
+    ifexp.condition = condition;
+    ifexp.consequence = consequence;
+    ifexp.alternative = alternative;
+    return ifexp;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+  toString(): string {
+    let res = "";
+    res += "if" + this.condition.toString() + " " + this.consequence.toString();
+    if (this.alternative) {
+      res += "else " + this.alternative.toString();
+    }
+    return res;
+  }
+
+  expressionNode() {}
+}
+
 export {
   Node,
   Statement,
   Expression,
   Program,
+  BlockStatement,
   LetStatement,
   ReturnStatement,
   ExpressionStatement,
@@ -260,5 +327,6 @@ export {
   IntegerLiteral,
   Boolean,
   PrefixExpression,
-  InfixExpression
+  InfixExpression,
+  IfExpression
 };

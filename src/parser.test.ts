@@ -231,6 +231,21 @@ describe("Parser", () => {
       assert.equal(actual, tt.expected);
     });
   });
+
+  it("if expression", () => {
+    const input = `if (x < y) { x }`;
+    const program = testParse(input);
+    assert.equal(program.statements.length, 1);
+
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const exp = stmt.expression as ast.IfExpression;
+    testInfixExpression(exp.condition, "x", "<", "y");
+    assert.equal(exp.consequence.statements.length, 1);
+    const consequence = exp.consequence
+      .statements[0] as ast.ExpressionStatement;
+    testIdentifier(consequence.expression, "x");
+    assert.equal(exp.alternative, null);
+  });
 });
 
 function testLetStatement(s: ast.Statement, name: string) {

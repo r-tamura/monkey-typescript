@@ -53,6 +53,7 @@ class Parser {
     this.registerPrefix(Tokens.TRUE, this.parseBoolean);
     this.registerPrefix(Tokens.FALSE, this.parseBoolean);
     this.registerPrefix(Tokens.LPAREN, this.parseGroupExpression);
+    this.registerPrefix(Tokens.IF, this.parseIfExpression);
 
     this.infixParseFns = {};
     this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
@@ -147,6 +148,22 @@ class Parser {
     return stmt;
   }
 
+  private parseBlockStatement(): ast.BlockStatement {
+    const block = ast.BlockStatement.of({
+      token: this.curToken,
+      statements: []
+    });
+    this.nextToken();
+    while (!this.curTokenIs(Tokens.RBRACE) && !this.curTokenIs(Tokens.EOF)) {
+      const stmt = this.parseStatement();
+      if (stmt !== null) {
+        block.statements.push(stmt);
+      }
+      this.nextToken();
+    }
+    return block;
+  }
+
   private noPrefixParseFnError(t: TokenType) {
     this.errors.push(`no prefix function for ${t} found`);
   }
@@ -224,6 +241,37 @@ class Parser {
     }
 
     return exp;
+  };
+
+  private parseIfExpression = (): ast.Expression => {
+    const expression = ast.IfExpression.of({ token: this.curToken });
+
+    if (!this.expectPeek(Tokens.LPAREN)) {
+      return null;
+    }
+
+    this.nextToken();
+    expression.condition = this.parseExpression(Precedences.LOWEST);
+
+    if (!this.expectPeek(Tokens.RPAREN)) {
+      return null;
+    }
+
+    if (!this.expectPeek(Tokens.LBRACE)) {
+      return null;
+    }
+
+    expression.consequence = this.parseBlockStatement();
+
+    if (this.peekTokenIs(Tokens.ELSE)) {
+      this.nextToken();
+      if (!this.peekTokenIs(Tokens.LBRACE)) {
+        return null;
+      }
+      expression.alternative = this.parseBlockStatement();
+    }
+
+    return expression;
   };
 
   private parseInfixExpression = (left: ast.Expression): ast.Expression => {
