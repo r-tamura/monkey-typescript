@@ -3,7 +3,8 @@ type ObjectType = string;
 enum ObjTypes {
   INTEGER = "INTEGER",
   BOOLEAN = "BOOLEAN",
-  NULL = "NULL"
+  NULL = "NULL",
+  RETURN_VALUE = "RETURN_VALUE"
 }
 
 // JavaScriptでObject型が既に定義されているためObjとする
@@ -58,4 +59,20 @@ class Null implements Obj {
   }
 }
 
-export { ObjTypes, Obj, Integer, Boolean, Null };
+class ReturnValue implements Obj {
+  value: Obj;
+  static of({ value }: { value: Obj }) {
+    const returnValue = new ReturnValue();
+    returnValue.value = value;
+    return returnValue;
+  }
+
+  type(): ObjTypes {
+    return ObjTypes.RETURN_VALUE;
+  }
+  inspect(): string {
+    return this.value.inspect();
+  }
+}
+
+export { ObjTypes, Obj, Integer, Boolean, Null, ReturnValue };

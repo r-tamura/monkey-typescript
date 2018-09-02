@@ -8,11 +8,15 @@ const FALSE = obj.Boolean.of({ value: false });
 function evaluate(node: ast.Node): obj.Obj {
   // Statements
   if (node instanceof ast.Program) {
-    return evalStatements(node.statements);
+    return evalProgram(node);
   } else if (node instanceof ast.ExpressionStatement) {
     return evaluate(node.expression);
   } else if (node instanceof ast.BlockStatement) {
-    return evalStatements(node.statements);
+    return evalBlockStatement(node);
+  } else if (node instanceof ast.ReturnStatement) {
+    const value = evaluate(node.returnValue);
+    // Memo: ReturnValueでwrapする
+    return obj.ReturnValue.of({ value });
   }
 
   // Expressions
@@ -34,10 +38,25 @@ function evaluate(node: ast.Node): obj.Obj {
   return null;
 }
 
-function evalStatements(stmts: ast.Statement[]): obj.Obj {
+function evalProgram(program: ast.Program): obj.Obj {
   let result;
-  for (const stmt of stmts) {
+  for (const stmt of program.statements) {
     result = evaluate(stmt);
+    if (result instanceof obj.ReturnValue) {
+      return result.value;
+    }
+  }
+  return result;
+}
+
+function evalBlockStatement(block: ast.BlockStatement): obj.Obj {
+  let result;
+  for (const stmt of block.statements) {
+    result = evaluate(stmt);
+    if (result instanceof obj.ReturnValue) {
+      // x return result.value ReturnValueのまま返す(最上位の呼び出し元までバブルアップさせる)
+      return result;
+    }
   }
   return result;
 }
