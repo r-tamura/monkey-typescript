@@ -13,7 +13,14 @@ describe("Evaluator", () => {
   it("integer", () => {
     const tests: Test[] = [
       { input: "5", expected: 5 },
-      { input: "10", expected: 10 }
+      { input: "10", expected: 10 },
+      { input: "-5", expected: -5 },
+      { input: "-10", expected: -10 },
+      { input: "5 + 5 + 5 + 5 - 10", expected: 10 },
+      { input: "2 * 2 * 2 * 2", expected: 16 },
+      { input: "-50 + 100 + -50", expected: 0 },
+      { input: "50 / 2 * 2 + 10", expected: 60 },
+      { input: "(5 + 10 * 2 + 15 / 3) * 2 + -10", expected: 50 }
     ];
 
     tests.forEach(tt => {
@@ -25,7 +32,32 @@ describe("Evaluator", () => {
   it("boolean", () => {
     const tests: Test[] = [
       { input: "true", expected: true },
-      { input: "false", expected: false }
+      { input: "false", expected: false },
+      { input: "5 > 10", expected: false },
+      { input: "10 > 5", expected: true },
+      { input: "5 < 10", expected: true },
+      { input: "5 > 10", expected: false },
+      { input: "1 == 1", expected: true },
+      { input: "1 != 1", expected: false },
+      { input: "true == true", expected: true },
+      { input: "false == false", expected: true },
+      { input: "true != true", expected: false },
+      { input: "false != false", expected: false },
+      { input: "(1 > 2) != false", expected: false }
+    ];
+
+    tests.forEach(tt => {
+      const evaluated = testEval(tt.input);
+      testBooleanObject(evaluated, tt.expected);
+    });
+  });
+
+  it("bang operator", () => {
+    const tests: Test[] = [
+      { input: "!true", expected: false },
+      { input: "!false", expected: true },
+      { input: "!5", expected: false },
+      { input: "!!true", expected: true }
     ];
 
     tests.forEach(tt => {
