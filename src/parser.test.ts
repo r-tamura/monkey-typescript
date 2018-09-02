@@ -29,58 +29,44 @@ describe("Parser", () => {
   });
 
   it("let statemet", () => {
-    const input = `
-    let x = 5;
-    let y = 10;
-    let foobar = 838383;
-    `;
-    const program = testParse(input);
-
-    assert.notEqual(program, null, "parseProgram() returned null");
-    assert.equal(
-      program.statements.length,
-      3,
-      `program.Statements does not contain 3 statements. got=${
-        program.statements.length
-      }`
-    );
-
-    const tests: { expectedIdentifier: string }[] = [
-      { expectedIdentifier: "x" },
-      { expectedIdentifier: "y" },
-      { expectedIdentifier: "foobar" }
+    const tests: {
+      input: string;
+      expectedIdentifier: string;
+      expectedValue: any;
+    }[] = [
+      { input: `let x = 5;`, expectedIdentifier: "x", expectedValue: 5 },
+      { input: `let y = true;`, expectedIdentifier: "y", expectedValue: true },
+      {
+        input: `let foobar = y;`,
+        expectedIdentifier: "foobar",
+        expectedValue: "y"
+      }
     ];
 
-    tests.forEach((tt, i) => {
-      const stmt = program.statements[i];
+    tests.forEach(tt => {
+      const program = testParse(tt.input);
+      assert.equal(program.statements.length, 1);
+      const stmt = program.statements[0] as ast.LetStatement;
       testLetStatement(stmt, tt.expectedIdentifier);
+      testLiteralExpression(stmt.value, tt.expectedValue);
     });
   });
 
   it("return statement", () => {
-    const input = `
-    return 5;
-    return 10;
-    return 993322;
-    `;
-    const program = testParse(input);
+    const tests: {
+      input: string;
+      expected: any;
+    }[] = [
+      { input: "return 5;", expected: 5 },
+      { input: "return true;", expected: true },
+      { input: "return ident;", expected: "ident" }
+    ];
 
-    assert.notEqual(program, null, "parseProgram() returned null");
-    assert.equal(
-      program.statements.length,
-      3,
-      `program.Statements does not contain 3 statements. got=${
-        program.statements.length
-      }`
-    );
-
-    program.statements.forEach((stmt, i) => {
-      const returnStmt = stmt as ast.ReturnStatement;
-      assert.equal(
-        returnStmt.tokenLiteral(),
-        "return",
-        `returnStmt.tokenLiteral not 'return', got=${typeof returnStmt}`
-      );
+    tests.forEach(tt => {
+      const program = testParse(tt.input);
+      assert.equal(program.statements.length, 1);
+      const stmt = program.statements[0] as ast.ReturnStatement;
+      testLiteralExpression(stmt.returnValue, tt.expected);
     });
   });
 

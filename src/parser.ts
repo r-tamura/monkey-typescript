@@ -119,8 +119,11 @@ class Parser {
       return null;
     }
 
-    // TODO
-    while (!this.curTokenIs(Tokens.SEMICOLON)) {
+    this.nextToken();
+
+    stmt.value = this.parseExpression(Precedences.LOWEST);
+
+    if (this.peekTokenIs(Tokens.SEMICOLON)) {
       this.nextToken();
     }
 
@@ -131,8 +134,9 @@ class Parser {
     const returnStmt = ast.ReturnStatement.of({ token: this.curToken });
     this.nextToken();
 
-    // TODO
-    while (!this.curTokenIs(Tokens.SEMICOLON)) {
+    returnStmt.returnValue = this.parseExpression(Precedences.LOWEST);
+
+    if (this.peekTokenIs(Tokens.SEMICOLON)) {
       this.nextToken();
     }
 
