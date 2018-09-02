@@ -2,7 +2,7 @@ import assert = require("power-assert");
 import * as obj from "./object";
 import { Parser } from "./parser";
 import { Lexer } from "./lexer";
-import { evaluate } from "./evaluator";
+import { evaluate, NULL } from "./evaluator";
 
 interface Test {
   input: string;
@@ -65,6 +65,27 @@ describe("Evaluator", () => {
       testBooleanObject(evaluated, tt.expected);
     });
   });
+
+  it("if else expressions", () => {
+    const tests: Test[] = [
+      { input: "if (true) { 10 }", expected: 10 },
+      { input: "if (false) { 10 }", expected: null },
+      { input: "if (1) { 10 }", expected: 10 },
+      { input: "if (1 < 2) { 10 }", expected: 10 },
+      { input: "if (1 > 2) { 10 }", expected: null },
+      { input: "if (1 > 2) { 10 } else { 20 }", expected: 20 },
+      { input: "if (1 < 2) { 10 } else { 20 }", expected: 10 }
+    ];
+
+    tests.forEach(tt => {
+      const evaluated = testEval(tt.input);
+      if (tt.expected === null) {
+        testNullObject(evaluated);
+      } else {
+        testIntegerObject(evaluated, tt.expected);
+      }
+    });
+  });
 });
 
 function testEval(input: string): obj.Obj {
@@ -82,4 +103,8 @@ function testIntegerObject(o: obj.Obj, expected: number) {
 function testBooleanObject(o: obj.Obj, expected: boolean) {
   const result = o as obj.Boolean;
   assert.equal(result.value, expected);
+}
+
+function testNullObject(o: obj.Obj) {
+  assert.equal(o, NULL);
 }

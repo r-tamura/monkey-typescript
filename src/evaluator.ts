@@ -11,6 +11,8 @@ function evaluate(node: ast.Node): obj.Obj {
     return evalStatements(node.statements);
   } else if (node instanceof ast.ExpressionStatement) {
     return evaluate(node.expression);
+  } else if (node instanceof ast.BlockStatement) {
+    return evalStatements(node.statements);
   }
 
   // Expressions
@@ -24,7 +26,9 @@ function evaluate(node: ast.Node): obj.Obj {
   } else if (node instanceof ast.InfixExpression) {
     const left = evaluate(node.left);
     const right = evaluate(node.right);
-    return evalInfixOperatorExpressin(node.operator, left, right);
+    return evalInfixOperatorExpression(node.operator, left, right);
+  } else if (node instanceof ast.IfExpression) {
+    return evalIfExpression(node);
   }
 
   return null;
@@ -70,7 +74,7 @@ function evalMinusOperatorExpression(right: obj.Obj): obj.Obj {
   return obj.Integer.of({ value: -value });
 }
 
-function evalInfixOperatorExpressin(
+function evalInfixOperatorExpression(
   operator: string,
   left: obj.Obj,
   right: obj.Obj
@@ -120,8 +124,32 @@ function evalIntegerInfixExpression(
   }
 }
 
+function evalIfExpression(ie: ast.IfExpression): obj.Obj {
+  const condition = evaluate(ie.condition);
+
+  if (isTruthy(condition)) {
+    return evaluate(ie.consequence);
+  } else if (ie.alternative) {
+    return evaluate(ie.alternative);
+  } else {
+    return NULL;
+  }
+}
+
 function nativeBooleanToBooleanObject(value: boolean) {
   return value ? TRUE : FALSE;
 }
 
-export { evaluate };
+function isTruthy(o: obj.Obj) {
+  switch (o) {
+    case NULL:
+    case FALSE:
+      return false;
+    case TRUE:
+      return true;
+    default:
+      return true;
+  }
+}
+
+export { evaluate, NULL, TRUE, FALSE };
