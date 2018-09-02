@@ -110,6 +110,45 @@ describe("Evaluator", () => {
       testIntegerObject(testEval(tt.input), tt.expected);
     });
   });
+
+  it("error handling", () => {
+    const tests: Test[] = [
+      {
+        input: "5 + true;",
+        expected: "type mismatch: INTEGER + BOOLEAN"
+      },
+      {
+        input: "5 + true; 5;",
+        expected: "type mismatch: INTEGER + BOOLEAN"
+      },
+      {
+        input: "-true",
+        expected: "unknown operator: -BOOLEAN"
+      },
+      {
+        input: "true + false",
+        expected: "unknown operator: BOOLEAN + BOOLEAN"
+      },
+      {
+        input: `
+        if (10 > 1) {
+          if (10 > 1) {
+            return true + false;
+          }
+
+          return 1;
+        }
+        `,
+        expected: "unknown operator: BOOLEAN + BOOLEAN"
+      }
+    ];
+
+    tests.forEach(tt => {
+      const evaluated = testEval(tt.input);
+      const err = evaluated as obj.Err;
+      assert.equal(err.message, tt.expected);
+    });
+  });
 });
 
 function testEval(input: string): obj.Obj {

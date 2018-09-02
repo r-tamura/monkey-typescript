@@ -4,7 +4,8 @@ enum ObjTypes {
   INTEGER = "INTEGER",
   BOOLEAN = "BOOLEAN",
   NULL = "NULL",
-  RETURN_VALUE = "RETURN_VALUE"
+  RETURN_VALUE = "RETURN_VALUE",
+  ERROR = "ERROR"
 }
 
 // JavaScriptでObject型が既に定義されているためObjとする
@@ -75,4 +76,20 @@ class ReturnValue implements Obj {
   }
 }
 
-export { ObjTypes, Obj, Integer, Boolean, Null, ReturnValue };
+// JavaScriptでError型が既に定義されているためErrとする
+class Err implements Obj {
+  message: string;
+  static of({ message }: { message: string }) {
+    const err = new Err();
+    err.message = message;
+    return err;
+  }
+  type(): ObjectType {
+    return ObjTypes.ERROR;
+  }
+  inspect(): string {
+    return `ERROR: ${this.message}`;
+  }
+}
+
+export { ObjTypes, Obj, Integer, Boolean, Null, ReturnValue, Err };
