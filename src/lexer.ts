@@ -162,4 +162,4 @@ class Lexer {
   }
 }
 
-export default Lexer;
+export { Lexer };

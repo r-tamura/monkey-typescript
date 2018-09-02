@@ -371,6 +371,11 @@ class CallExpression implements Expression, CallExpressionProps {
   }
   toString(): string {
     let res = "";
+
+    if (this.arguments.length === 0) {
+      return this.function.toString() + "()";
+    }
+
     const args = this.arguments
       .map(exp => exp.toString())
       .reduce((acc, v) => acc + ", " + v);

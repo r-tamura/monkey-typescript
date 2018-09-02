@@ -9,11 +9,13 @@
       "request": "launch",
       "name": "Launch Program",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}\\src\\index.ts",
+      "program": "${workspaceFolder}/src/index.ts",
       "sourceMaps": true,
+      "runtimeExecutable": null,
+      "runtimeArgs": ["--nolazy"],
       "console": "integratedTerminal",
       "outFiles": [
-        "${workspaceFolder}/bin/*.js"
+        "${workspaceFolder}/bin/**/*.js"
       ]
     },
     // 全テストファイルをデバッグ

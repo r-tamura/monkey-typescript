@@ -1,5 +1,5 @@
 import { TokenType, Tokens } from "./token";
-import Lexer from "./lexer";
+import { Lexer } from "./lexer";
 import * as assert from "power-assert";
 
 describe("Lexer", () => {

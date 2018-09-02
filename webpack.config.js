@@ -3,7 +3,7 @@ const path = require("path");
 module.exports = {
   target: "node",
   mode: "development",
-  devtool: "cheap-source-map",
+  devtool: "source-map",
   entry: "./src/index.ts",
   module: {
     rules: [

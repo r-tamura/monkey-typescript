@@ -1,5 +1,5 @@
 import { Parser } from "./parser";
-import Lexer from "./lexer";
+import { Lexer } from "./lexer";
 import * as ast from "./ast";
 import assert = require("power-assert");
 import { Tokens } from "./token";

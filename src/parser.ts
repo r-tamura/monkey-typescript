@@ -1,4 +1,4 @@
-import Lexer from "./lexer";
+import { Lexer } from "./lexer";
 import { Token, Tokens, TokenType } from "./token";
 import * as ast from "./ast";
 
@@ -379,6 +379,7 @@ class Parser {
       this.nextToken();
       return true;
     } else {
+      this.peekError(t);
       return false;
     }
   }
