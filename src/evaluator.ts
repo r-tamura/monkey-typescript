@@ -1,26 +1,33 @@
 import * as util from "util";
 import * as ast from "./ast";
 import * as obj from "./object";
+import { Environment } from "./environment";
 
 const NULL = obj.Null.of();
 const TRUE = obj.Boolean.of({ value: true });
 const FALSE = obj.Boolean.of({ value: false });
 
-function evaluate(node: ast.Node): obj.Obj {
+function evaluate(node: ast.Node, env: Environment): obj.Obj {
   // Statements
   if (node instanceof ast.Program) {
-    return evalProgram(node);
+    return evalProgram(node, env);
   } else if (node instanceof ast.ExpressionStatement) {
-    return evaluate(node.expression);
+    return evaluate(node.expression, env);
   } else if (node instanceof ast.BlockStatement) {
-    return evalBlockStatement(node);
+    return evalBlockStatement(node, env);
   } else if (node instanceof ast.ReturnStatement) {
-    const value = evaluate(node.returnValue);
+    const value = evaluate(node.returnValue, env);
     if (isError(value)) {
       return value;
     }
     // Memo: ReturnValueでwrapする
     return obj.ReturnValue.of({ value });
+  } else if (node instanceof ast.LetStatement) {
+    const val = evaluate(node.value, env);
+    if (isError(val)) {
+      return val;
+    }
+    env.set(node.name.value, val);
   }
 
   // Expressions
@@ -29,32 +36,34 @@ function evaluate(node: ast.Node): obj.Obj {
   } else if (node instanceof ast.Boolean) {
     return node.value ? TRUE : FALSE;
   } else if (node instanceof ast.PrefixExpression) {
-    const right = evaluate(node.right);
+    const right = evaluate(node.right, env);
     if (isError(right)) {
       return right;
     }
     return evalPrefixExpression(node.operator, right);
   } else if (node instanceof ast.InfixExpression) {
-    const left = evaluate(node.left);
+    const left = evaluate(node.left, env);
     if (isError(left)) {
       return left;
     }
-    const right = evaluate(node.right);
+    const right = evaluate(node.right, env);
     if (isError(right)) {
       return right;
     }
     return evalInfixOperatorExpression(node.operator, left, right);
   } else if (node instanceof ast.IfExpression) {
-    return evalIfExpression(node);
+    return evalIfExpression(node, env);
+  } else if (node instanceof ast.Identifier) {
+    return evalIdentifier(node, env);
   }
 
   return null;
 }
 
-function evalProgram(program: ast.Program): obj.Obj {
+function evalProgram(program: ast.Program, env: Environment): obj.Obj {
   let result;
   for (const stmt of program.statements) {
-    result = evaluate(stmt);
+    result = evaluate(stmt, env);
     if (result instanceof obj.ReturnValue) {
       return result.value;
     } else if (result instanceof obj.Err) {
@@ -64,10 +73,13 @@ function evalProgram(program: ast.Program): obj.Obj {
   return result;
 }
 
-function evalBlockStatement(block: ast.BlockStatement): obj.Obj {
+function evalBlockStatement(
+  block: ast.BlockStatement,
+  env: Environment
+): obj.Obj {
   let result;
   for (const stmt of block.statements) {
-    result = evaluate(stmt);
+    result = evaluate(stmt, env);
     if (result instanceof obj.ReturnValue || result instanceof obj.Err) {
       // x return result.value ReturnValueのまま返す(最上位の呼び出し元までバブルアップさせる)
       return result;
@@ -175,20 +187,29 @@ function evalIntegerInfixExpression(
   }
 }
 
-function evalIfExpression(ie: ast.IfExpression): obj.Obj {
-  const condition = evaluate(ie.condition);
+function evalIfExpression(ie: ast.IfExpression, env: Environment): obj.Obj {
+  const condition = evaluate(ie.condition, env);
 
   if (isError(condition)) {
     return condition;
   }
 
   if (isTruthy(condition)) {
-    return evaluate(ie.consequence);
+    return evaluate(ie.consequence, env);
   } else if (ie.alternative) {
-    return evaluate(ie.alternative);
+    return evaluate(ie.alternative, env);
   } else {
     return NULL;
   }
+}
+
+function evalIdentifier(node: ast.Identifier, env: Environment): obj.Obj {
+  const val = env.get(node.value);
+  // Identifierが環境にないときはnullが返る
+  if (val === null) {
+    return newError(`identifier not found: ${node.value}`);
+  }
+  return val;
 }
 
 function nativeBooleanToBooleanObject(value: boolean) {

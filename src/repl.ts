@@ -6,10 +6,12 @@ import { Lexer } from "./lexer";
 import { Parser } from "./parser";
 import { Writable, Readable } from "stream";
 import { evaluate } from "./evaluator";
+import { newEnvironment } from "./environment";
 
 const PROMPT = ">> ";
 // https://nodejs.org/api/readline.html#readline_example_tiny_cli
 function start(input: Readable, output: Writable) {
+  const env = newEnvironment();
   const exit = () => {
     console.log("\nREPL exit");
     process.exit(0);
@@ -32,7 +34,7 @@ function start(input: Readable, output: Writable) {
         return;
       }
 
-      const evaluated = evaluate(program);
+      const evaluated = evaluate(program, env);
       if (evaluated) {
         output.write(evaluated.inspect() + "\n");
       }

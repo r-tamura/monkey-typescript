@@ -3,6 +3,7 @@ import * as obj from "./object";
 import { Parser } from "./parser";
 import { Lexer } from "./lexer";
 import { evaluate, NULL } from "./evaluator";
+import { newEnvironment } from "./environment";
 
 interface Test {
   input: string;
@@ -140,6 +141,10 @@ describe("Evaluator", () => {
         }
         `,
         expected: "unknown operator: BOOLEAN + BOOLEAN"
+      },
+      {
+        input: "foobar;",
+        expected: "identifier not found: foobar"
       }
     ];
 
@@ -149,13 +154,26 @@ describe("Evaluator", () => {
       assert.equal(err.message, tt.expected);
     });
   });
+
+  it("let statements", () => {
+    const tests: Test[] = [
+      { input: "let a = 5; a;", expected: 5 },
+      { input: "let a = 5 * 5; a;", expected: 25 },
+      { input: "let a = 5; let b = a; b;", expected: 5 },
+      { input: "let a = 5; let b = a; let c = a + b + 5; c;", expected: 15 }
+    ];
+    tests.forEach(tt => {
+      testIntegerObject(testEval(tt.input), tt.expected);
+    });
+  });
 });
 
 function testEval(input: string): obj.Obj {
+  const env = newEnvironment();
   const l = Lexer.of(input);
   const p = Parser.of(l);
   const program = p.parseProgram();
-  return evaluate(program);
+  return evaluate(program, env);
 }
 
 function testIntegerObject(o: obj.Obj, expected: number) {
