@@ -31,6 +31,13 @@ class Integer implements Obj {
 
 class Boolean implements Obj {
   value: boolean;
+
+  static of({ value }: { value: boolean }) {
+    const b = new Boolean();
+    b.value = value;
+    return b;
+  }
+
   type(): ObjectType {
     return ObjTypes.BOOLEAN;
   }
@@ -40,6 +47,9 @@ class Boolean implements Obj {
 }
 
 class Null implements Obj {
+  static of() {
+    return new Null();
+  }
   type(): ObjectType {
     return ObjTypes.NULL;
   }

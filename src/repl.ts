@@ -4,11 +4,12 @@
 import * as readline from "readline";
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
-import { Writable } from "stream";
+import { Writable, Readable } from "stream";
+import { evaluate } from "./evaluator";
 
 const PROMPT = ">> ";
 // https://nodejs.org/api/readline.html#readline_example_tiny_cli
-function start() {
+function start(input: Readable, output: Writable) {
   const exit = () => {
     console.log("\nREPL exit");
     process.exit(0);
@@ -16,8 +17,8 @@ function start() {
 
   readline
     .createInterface({
-      input: process.stdin,
-      output: process.stdout,
+      input: input,
+      output: output,
       prompt: PROMPT
     })
     .on("line", function(line) {
@@ -26,11 +27,16 @@ function start() {
       const program = p.parseProgram();
 
       if (p.getErrors().length > 0) {
-        printErrors(process.stdout, p.getErrors());
+        printErrors(output, p.getErrors());
         this.prompt();
         return;
       }
-      process.stdout.write(program.toString() + "\n");
+
+      const evaluated = evaluate(program);
+      if (evaluated) {
+        output.write(evaluated.inspect() + "\n");
+      }
+
       this.prompt();
     })
     .on("SIGINT", exit)
@@ -38,10 +44,10 @@ function start() {
     .prompt();
 }
 
-function printErrors(out: Writable, errors: string[]) {
-  out.write("Woops! We ran into some monkey business here!\n");
-  out.write(" parser errors:\n");
-  errors.forEach(e => out.write("\t" + e + "\n"));
+function printErrors(output: Writable, errors: string[]) {
+  output.write("Woops! We ran into some monkey business here!\n");
+  output.write(" parser errors:\n");
+  errors.forEach(e => output.write("\t" + e + "\n"));
 }
 
 export { start };

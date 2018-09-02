@@ -6,7 +6,7 @@ function main() {
     `Hello ${userInfo().username}! This is the Monkey programming language!
     Feel free to type in commands\n`
   );
-  repl.start();
+  repl.start(process.stdin, process.stdout);
 }
 
 // When a file is run directly from Node, require.main is set to its module.
