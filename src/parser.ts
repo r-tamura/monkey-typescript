@@ -26,7 +26,9 @@ const PrecedenceMap = new Map<TokenType, number>([
   [Tokens.MINUS, Precedences.SUM],
 
   [Tokens.ASTERISK, Precedences.PRODUCT],
-  [Tokens.SLASH, Precedences.PRODUCT]
+  [Tokens.SLASH, Precedences.PRODUCT],
+
+  [Tokens.LPAREN, Precedences.CALL]
 ]);
 
 class Parser {
@@ -65,6 +67,7 @@ class Parser {
     this.registerInfix(Tokens.GT, this.parseInfixExpression);
     this.registerInfix(Tokens.EQ, this.parseInfixExpression);
     this.registerInfix(Tokens.NOT_EQ, this.parseInfixExpression);
+    this.registerInfix(Tokens.LPAREN, this.parseCallExpression);
   }
 
   static of(l: Lexer) {
@@ -330,6 +333,37 @@ class Parser {
 
     return identifiers;
   }
+
+  private parseCallExpression = (func: ast.Expression): ast.Expression => {
+    return ast.CallExpression.of({
+      token: this.curToken,
+      function: func,
+      arguments: this.parseArguments()
+    });
+  };
+
+  private parseArguments = (): ast.Expression[] => {
+    const args = [];
+    if (this.peekTokenIs(Tokens.RPAREN)) {
+      this.nextToken();
+      return args;
+    }
+
+    this.nextToken();
+    args.push(this.parseExpression(Precedences.LOWEST));
+
+    while (this.peekTokenIs(Tokens.COMMA)) {
+      this.nextToken();
+      this.nextToken();
+      args.push(this.parseExpression(Precedences.LOWEST));
+    }
+
+    if (!this.expectPeek(Tokens.RPAREN)) {
+      return null;
+    }
+
+    return args;
+  };
 
   private nextToken() {
     this.curToken = this.peekToken;

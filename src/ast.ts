@@ -347,6 +347,39 @@ class FunctionLiteral implements Expression, FunctionLiteralProps {
   expressionNode() {}
 }
 
+interface CallExpressionProps {
+  token?: Token;
+  function?: Expression; // Identifier or Function Literal
+  arguments?: Expression[];
+}
+
+class CallExpression implements Expression, CallExpressionProps {
+  token: Token;
+  function: Expression;
+  arguments: Expression[];
+
+  static of({ token, function: func, arguments: args }: CallExpressionProps) {
+    const callexp = new CallExpression();
+    callexp.token = token;
+    callexp.function = func;
+    callexp.arguments = args || [];
+    return callexp;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+  toString(): string {
+    let res = "";
+    const args = this.arguments
+      .map(exp => exp.toString())
+      .reduce((acc, v) => acc + ", " + v);
+    res += this.function.toString() + "(" + args + ")";
+    return res;
+  }
+  expressionNode() {}
+}
+
 export {
   Node,
   Statement,
@@ -362,5 +395,6 @@ export {
   PrefixExpression,
   InfixExpression,
   IfExpression,
-  FunctionLiteral
+  FunctionLiteral,
+  CallExpression
 };

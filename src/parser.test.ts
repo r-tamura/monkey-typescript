@@ -222,7 +222,12 @@ describe("Parser", () => {
       { input: "1 + (2 + 3) + 4", expected: "((1 + (2 + 3)) + 4)" },
       { input: "(5 + 5) * 2", expected: "((5 + 5) * 2)" },
       { input: "-(5 + 5)", expected: "(-(5 + 5))" },
-      { input: "!(true == false)", expected: "(!(true == false))" }
+      { input: "!(true == false)", expected: "(!(true == false))" },
+      { input: "a + add(b * c) + d", expected: "((a + add((b * c))) + d)" },
+      {
+        input: "add(a / b, 1 + 2 * 3, 3 + add(3 + 4))",
+        expected: "add((a / b), (1 + (2 * 3)), (3 + add((3 + 4))))"
+      }
     ];
 
     tests.forEach(tt => {
@@ -259,6 +264,29 @@ describe("Parser", () => {
 
     const bodyStmt = func.body.statements[0] as ast.ExpressionStatement;
     testInfixExpression(bodyStmt.expression, "x", "+", "y");
+  });
+
+  it("call expression", () => {
+    const input = `add(1, 2 + 3, 4 + 5)`;
+    const program = testParse(input);
+    assert.equal(program.statements.length, 1);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const exp = stmt.expression as ast.CallExpression;
+    testIdentifier(exp.function, "add");
+    assert.equal(exp.arguments.length, 3);
+    testLiteralExpression(exp.arguments[0], 1);
+    testInfixExpression(exp.arguments[1], "2", "+", "3");
+    testInfixExpression(exp.arguments[2], "4", "+", "5");
+  });
+
+  it("call expression parameters", () => {
+    const input = `add()`;
+    const program = testParse(input);
+    assert.equal(program.statements.length, 1);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const exp = stmt.expression as ast.CallExpression;
+    testIdentifier(exp.function, "add");
+    assert.equal(exp.arguments.length, 0);
   });
 });
 
