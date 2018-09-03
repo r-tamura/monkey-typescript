@@ -1,3 +1,6 @@
+import { Identifier, BlockStatement } from "./ast";
+import { Environment } from "./environment";
+
 type ObjectType = string;
 
 enum ObjTypes {
@@ -5,7 +8,8 @@ enum ObjTypes {
   BOOLEAN = "BOOLEAN",
   NULL = "NULL",
   RETURN_VALUE = "RETURN_VALUE",
-  ERROR = "ERROR"
+  ERROR = "ERROR",
+  FUNCTION = "FUNCTION"
 }
 
 // JavaScriptでObject型が既に定義されているためObjとする
@@ -92,4 +96,35 @@ class Err implements Obj {
   }
 }
 
-export { ObjTypes, Obj, Integer, Boolean, Null, ReturnValue, Err };
+// JavaScriptでFunction型が既に定義されているためFuncとする
+class Func implements Obj {
+  parameters: Identifier[];
+  body: BlockStatement;
+  env: Environment;
+
+  static of({
+    parameters,
+    body,
+    env
+  }: {
+    parameters: Identifier[];
+    body: BlockStatement;
+    env: Environment;
+  }) {
+    const fn = new Func();
+    fn.parameters = parameters;
+    fn.body = body;
+    fn.env = env;
+    return fn;
+  }
+
+  type(): ObjectType {
+    return ObjTypes.FUNCTION;
+  }
+  inspect(): string {
+    const params = this.parameters.map(v => v.toString()).join(", ");
+    return "fn(" + params + ") {\n" + this.body.toString() + "\n}";
+  }
+}
+
+export { ObjTypes, Obj, Integer, Boolean, Null, ReturnValue, Err, Func };

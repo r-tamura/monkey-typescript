@@ -166,6 +166,38 @@ describe("Evaluator", () => {
       testIntegerObject(testEval(tt.input), tt.expected);
     });
   });
+
+  it("function", () => {
+    const input = `fn(x) { x + 2; }`;
+    const evaluated = testEval(input);
+    const fn = evaluated as obj.Func;
+
+    assert.equal(fn.parameters.length, 1);
+    assert.equal(fn.parameters[0], "x");
+    assert.equal(fn.body.toString(), "(x + 2)");
+  });
+
+  it("function application", () => {
+    const tests: Test[] = [
+      { input: "let identity = fn(x) { x; }; identity(5);", expected: 5 },
+      {
+        input: "let identity = fn(x) { return x; }; identity(5);",
+        expected: 5
+      },
+      { input: "let double = fn(x) { x * 2; }; double(5);", expected: 10 },
+      { input: "let add = fn(x, y) { x + y; }; add(5, 5);", expected: 10 },
+      {
+        input: "let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));",
+        expected: 20
+      },
+      { input: "fn(x) { x; }(5);", expected: 5 }
+    ];
+
+    tests.forEach(tt => {
+      const evaluated = testEval(tt.input);
+      testIntegerObject(evaluated, tt.expected);
+    });
+  });
 });
 
 function testEval(input: string): obj.Obj {
