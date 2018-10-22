@@ -53,6 +53,28 @@ describe("Evaluator", () => {
     });
   });
 
+  it("string", () => {
+    const input = `"Hello World!"`;
+
+    const evaluated = testEval(input);
+    const str = evaluated as obj.Str;
+    assert.equal(
+      str.value,
+      "Hello World!",
+      `Sting has wrong value. got=${str}`
+    );
+  });
+
+  it("string concatenation", () => {
+    const evaluated = testEval(`"Hello" + " " + "World!"`);
+    const str = evaluated as obj.Str;
+    assert.equal(
+      str.value,
+      "Hello World!",
+      `String has wrong value. got=${str.value}`
+    );
+  });
+
   it("bang operator", () => {
     const tests: Test[] = [
       { input: "!true", expected: false },
@@ -145,6 +167,10 @@ describe("Evaluator", () => {
       {
         input: "foobar;",
         expected: "identifier not found: foobar"
+      },
+      {
+        input: `"Hello" - "World"`,
+        expected: "unknown operator: STRING - STRING"
       }
     ];
 

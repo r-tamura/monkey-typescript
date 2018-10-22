@@ -20,6 +20,8 @@ describe("Lexer", () => {
 
     10 == 10;
     10 != 9;
+    "foobar"
+    "foo bar"
     `;
 
     const tests: Array<{ expectedType: TokenType; expectedLiteral: string }> = [
@@ -103,6 +105,10 @@ describe("Lexer", () => {
       { expectedType: Tokens.NOT_EQ, expectedLiteral: "!=" },
       { expectedType: Tokens.INT, expectedLiteral: "9" },
       { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+
+      // Strings
+      { expectedType: Tokens.STRING, expectedLiteral: "foobar"},
+      { expectedType: Tokens.STRING, expectedLiteral: "foo bar"},
 
       { expectedType: Tokens.EOF, expectedLiteral: "" }
     ];

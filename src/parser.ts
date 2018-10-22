@@ -57,6 +57,7 @@ class Parser {
     this.registerPrefix(Tokens.LPAREN, this.parseGroupExpression);
     this.registerPrefix(Tokens.IF, this.parseIfExpression);
     this.registerPrefix(Tokens.FUNCTION, this.parseFunctionLiteral);
+    this.registerPrefix(Tokens.STRING, this.parseStringLiteral);
 
     this.infixParseFns = {};
     this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
@@ -220,6 +221,13 @@ class Parser {
       this.errors.push(`could not parse ${this.curToken.literal} as integer`);
       return null;
     }
+  };
+
+  private parseStringLiteral = (): ast.Expression => {
+    return ast.StringLiteral.of({
+      token: this.curToken,
+      value: this.curToken.literal
+    });
   };
 
   private parseBoolean = (): ast.Expression => {

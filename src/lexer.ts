@@ -34,6 +34,9 @@ class Lexer {
     let tok: Token;
     this.skipWhiteSpace();
     switch (this.ch) {
+      case `"`:
+        tok = this.newToken(Tokens.STRING, this.readString());
+        break;
       case "=":
         if (this.peekChar() === "=") {
           const ch = this.ch;
@@ -139,6 +142,14 @@ class Lexer {
     while (this.isDigit(this.ch)) {
       this.readChar();
     }
+    return this.input.slice(first, this.position);
+  }
+
+  private readString(): string {
+    const first = this.position + 1;
+    do {
+      this.readChar();
+    } while (this.ch !== '"' && this.ch !== "\0");
     return this.input.slice(first, this.position);
   }
 

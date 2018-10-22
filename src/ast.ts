@@ -1,5 +1,4 @@
 import { Token } from "./token";
-import { OutgoingMessage } from "http";
 
 interface Node {
   tokenLiteral(): string;
@@ -170,7 +169,7 @@ interface IntegerLiteralProps {
   token?: Token;
   value?: number;
 }
-class IntegerLiteral implements Expression, IntegerLiteral {
+class IntegerLiteral implements Expression, IntegerLiteralProps {
   public token: Token;
   public value: number;
 
@@ -187,6 +186,33 @@ class IntegerLiteral implements Expression, IntegerLiteral {
 
   toString(): string {
     return this.value.toString(10);
+  }
+
+  expressionNode() {}
+}
+
+interface StringLiteralProps {
+  token: Token;
+  value: string;
+}
+
+class StringLiteral implements Expression, StringLiteralProps {
+  public token: Token;
+  public value: string;
+
+  static of({ token, value }: StringLiteralProps): StringLiteral {
+    const literal = new StringLiteral();
+    literal.token = token;
+    literal.value = value;
+    return literal;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return this.token.literal;
   }
 
   expressionNode() {}
@@ -396,6 +422,7 @@ export {
   ExpressionStatement,
   Identifier,
   IntegerLiteral,
+  StringLiteral,
   Boolean,
   PrefixExpression,
   InfixExpression,

@@ -35,6 +35,8 @@ function evaluate(node: ast.Node, env: Environment): obj.Obj {
     return obj.Integer.of({ value: node.value });
   } else if (node instanceof ast.Boolean) {
     return node.value ? TRUE : FALSE;
+  } else if (node instanceof ast.StringLiteral) {
+    return obj.Str.of({ value: node.value });
   } else if (node instanceof ast.PrefixExpression) {
     const right = evaluate(node.right, env);
     if (isError(right)) {
@@ -144,6 +146,11 @@ function evalInfixOperatorExpression(
     right.type() === obj.ObjTypes.INTEGER
   ) {
     return evalIntegerInfixExpression(operator, left, right);
+  } else if (
+    left.type() === obj.ObjTypes.STRING &&
+    right.type() === obj.ObjTypes.STRING
+  ) {
+    return evalStringInfixExpression(operator, left, right);
   } else if (operator === "==") {
     // TRUE, FALSEオブジェクトのみなので、オブジェクト同士の比較でよい
     return nativeBooleanToBooleanObject(left === right);
@@ -199,6 +206,23 @@ function evalIntegerInfixExpression(
         right.type()
       );
   }
+}
+
+function evalStringInfixExpression(
+  operator: string,
+  left: obj.Obj,
+  right: obj.Obj
+): obj.Obj {
+  const leftVal = (left as obj.Str).value;
+  const rightVal = (right as obj.Str).value;
+
+  if (operator !== "+") {
+    return newError(
+      `unknown operator: ${left.type()} ${operator} ${right.type()}`
+    );
+  }
+
+  return obj.Str.of({ value: leftVal + rightVal });
 }
 
 function evalIfExpression(ie: ast.IfExpression, env: Environment): obj.Obj {

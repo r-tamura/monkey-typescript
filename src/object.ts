@@ -6,6 +6,7 @@ type ObjectType = string;
 enum ObjTypes {
   INTEGER = "INTEGER",
   BOOLEAN = "BOOLEAN",
+  STRING = "STRING",
   NULL = "NULL",
   RETURN_VALUE = "RETURN_VALUE",
   ERROR = "ERROR",
@@ -32,6 +33,24 @@ class Integer implements Obj {
   }
   inspect(): string {
     return this.value.toString(10);
+  }
+}
+
+// JavaScriptでStringr型が既に定義されているためStrとする
+class Str implements Obj {
+  value: string;
+
+  static of({ value }: { value: string }) {
+    const i = new Str();
+    i.value = value;
+    return i;
+  }
+
+  type(): ObjectType {
+    return ObjTypes.STRING;
+  }
+  inspect(): string {
+    return this.value;
   }
 }
 
@@ -127,4 +146,4 @@ class Func implements Obj {
   }
 }
 
-export { ObjTypes, Obj, Integer, Boolean, Null, ReturnValue, Err, Func };
+export { ObjTypes, Obj, Integer, Boolean, Str, Null, ReturnValue, Err, Func };

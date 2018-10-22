@@ -112,6 +112,18 @@ describe("Parser", () => {
     );
   });
 
+  it("string literal", () => {
+    const input = `"hello world"`;
+    const program = testParse(input);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const literal = stmt.expression as ast.StringLiteral;
+    assert.equal(
+      literal,
+      "hello world",
+      `literal.Value not "hello world". got=${literal.value}`
+    );
+  });
+
   it("prefix expression", () => {
     const tests = [
       { input: "!5;", operator: "!", expected: 5 },
