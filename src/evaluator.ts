@@ -2,10 +2,15 @@ import * as util from "util";
 import * as ast from "./ast";
 import * as obj from "./object";
 import { Environment, newEnclosedEnvironment } from "./environment";
+import { getBuiltinByName } from "./builtins";
 
 const NULL = obj.Null.of();
 const TRUE = obj.Boolean.of({ value: true });
 const FALSE = obj.Boolean.of({ value: false });
+
+const builtins = {
+  len: getBuiltinByName("len")
+};
 
 function evaluate(node: ast.Node, env: Environment): obj.Obj {
   // Statements
@@ -242,7 +247,7 @@ function evalIfExpression(ie: ast.IfExpression, env: Environment): obj.Obj {
 }
 
 function evalIdentifier(node: ast.Identifier, env: Environment): obj.Obj {
-  const val = env.get(node.value);
+  const val = env.get(node.value) || getBuiltinByName(node.value);
   // Identifierが環境にないときはnullが返る
   if (val === null) {
     return newError(`identifier not found: ${node.value}`);
@@ -263,12 +268,20 @@ function evalExpressions(exps: ast.Expression[], env): obj.Obj[] {
 }
 
 function applyFunction(func: obj.Obj, args: obj.Obj[]): obj.Obj {
-  const fn = func as obj.Func;
-  const env = extendFunctionEnv(fn, args);
-  const evaluated = evaluate(fn.body, env);
-  // 関数の返り値はreturnされた値をバブルアップしないのでunwrapする
-  // ReturnValue出ない場合(Errorの場合)はバブルアップさせる
-  return unwrapReturnValue(evaluated);
+  if (func instanceof obj.Func) {
+    const fn = func as obj.Func;
+    const env = extendFunctionEnv(fn, args);
+    const evaluated = evaluate(fn.body, env);
+    // 関数の返り値はreturnされた値をバブルアップしないのでunwrapする
+    // ReturnValue出ない場合(Errorの場合)はバブルアップさせる
+    return unwrapReturnValue(evaluated);
+  }
+
+  if (func instanceof obj.Builtin) {
+    return func.fn(...args);
+  }
+
+  return newError(`not a function: ${func.type()}`);
 }
 
 function extendFunctionEnv(fn: obj.Func, args: obj.Obj[]) {

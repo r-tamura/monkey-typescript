@@ -10,7 +10,8 @@ enum ObjTypes {
   NULL = "NULL",
   RETURN_VALUE = "RETURN_VALUE",
   ERROR = "ERROR",
-  FUNCTION = "FUNCTION"
+  FUNCTION = "FUNCTION",
+  BUILTIN = "BUILTIN"
 }
 
 // JavaScriptでObject型が既に定義されているためObjとする
@@ -146,4 +147,34 @@ class Func implements Obj {
   }
 }
 
-export { ObjTypes, Obj, Integer, Boolean, Str, Null, ReturnValue, Err, Func };
+type BuiltinFunction = (...args: any) => Obj;
+class Builtin implements Obj {
+  fn: BuiltinFunction;
+
+  static of({ fn }: { fn: BuiltinFunction }) {
+    const b = new Builtin();
+    b.fn = fn;
+    return b;
+  }
+
+  type(): ObjectType {
+    return ObjTypes.BUILTIN;
+  }
+  inspect(): string {
+    return "builtin function";
+  }
+}
+
+export {
+  ObjTypes,
+  Obj,
+  Integer,
+  Boolean,
+  Str,
+  Null,
+  ReturnValue,
+  Err,
+  Func,
+  Builtin,
+  BuiltinFunction
+};
