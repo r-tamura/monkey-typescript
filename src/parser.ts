@@ -58,6 +58,7 @@ class Parser {
     this.registerPrefix(Tokens.IF, this.parseIfExpression);
     this.registerPrefix(Tokens.FUNCTION, this.parseFunctionLiteral);
     this.registerPrefix(Tokens.STRING, this.parseStringLiteral);
+    this.registerPrefix(Tokens.LBRACKET, this.parseArrayLiteral);
 
     this.infixParseFns = {};
     this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
@@ -237,6 +238,14 @@ class Parser {
     });
   };
 
+  private parseArrayLiteral = (): ast.Expression => {
+    const array = ast.ArrayLiteral.of({
+      token: this.curToken,
+      elements: this.parseExpressionList(Tokens.RBRACKET)
+    });
+    return array;
+  };
+
   private parsePrefixExpression = (): ast.Expression => {
     const exp = ast.PrefixExpression.of({
       token: this.curToken,
@@ -350,31 +359,31 @@ class Parser {
     return ast.CallExpression.of({
       token: this.curToken,
       function: func,
-      arguments: this.parseArguments()
+      arguments: this.parseExpressionList(Tokens.RPAREN)
     });
   };
 
-  private parseArguments = (): ast.Expression[] => {
-    const args = [];
+  private parseExpressionList = (end: Tokens): ast.Expression[] => {
+    const list = [];
     if (this.peekTokenIs(Tokens.RPAREN)) {
       this.nextToken();
-      return args;
+      return list;
     }
 
     this.nextToken();
-    args.push(this.parseExpression(Precedences.LOWEST));
+    list.push(this.parseExpression(Precedences.LOWEST));
 
     while (this.peekTokenIs(Tokens.COMMA)) {
       this.nextToken();
       this.nextToken();
-      args.push(this.parseExpression(Precedences.LOWEST));
+      list.push(this.parseExpression(Precedences.LOWEST));
     }
 
-    if (!this.expectPeek(Tokens.RPAREN)) {
+    if (!this.expectPeek(end)) {
       return null;
     }
 
-    return args;
+    return list;
   };
 
   private nextToken() {

@@ -1,4 +1,4 @@
-import { Token } from "./token";
+import { Token, Tokens } from "./token";
 
 interface Node {
   tokenLiteral(): string;
@@ -243,6 +243,36 @@ class Boolean implements Expression, BooleanProps {
   expressionNode() {}
 }
 
+interface ArrayProps {
+  token?: Token;
+  elements?: Expression[];
+}
+
+class ArrayLiteral implements Expression, ArrayProps {
+  token: Token;
+  elements: Expression[];
+
+  static of({ token, elements }: ArrayProps): ArrayLiteral {
+    const array = new ArrayLiteral();
+    array.token = token;
+    array.elements = elements;
+    return array;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+  toString(): string {
+    return (
+      "[" +
+      this.elements.reduce((acc, e) => acc + ", " + e.toString(), "") +
+      "]"
+    );
+  }
+
+  expressionNode() {}
+}
+
 interface PrefixExpressionProps {
   token?: Token;
   operator?: string;
@@ -424,6 +454,7 @@ export {
   IntegerLiteral,
   StringLiteral,
   Boolean,
+  ArrayLiteral,
   PrefixExpression,
   InfixExpression,
   IfExpression,

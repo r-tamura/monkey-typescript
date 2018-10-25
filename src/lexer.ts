@@ -91,6 +91,12 @@ class Lexer {
       case "}":
         tok = this.newToken(Tokens.RBRACE, this.ch);
         break;
+      case "[":
+        tok = this.newToken(Tokens.LBRACKET, this.ch);
+        break;
+      case "]":
+        tok = this.newToken(Tokens.RBRACKET, this.ch);
+        break;
       case "\0":
         tok = this.newToken(Tokens.EOF, "");
         break;

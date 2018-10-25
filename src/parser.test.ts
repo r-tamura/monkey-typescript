@@ -124,6 +124,21 @@ describe("Parser", () => {
     );
   });
 
+  it("array literal", () => {
+    const program = testParse(`[1, 2 * 2, 3 + 3]`);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const array = stmt.expression as ast.ArrayLiteral;
+    assert.equal(
+      array.elements.length,
+      3,
+      `array.elements.length not 3. got=${array.elements.length}`
+    );
+
+    testIntegerLiteral(array.elements[0], 1);
+    testInfixExpression(array.elements[1], 2, "*", 2);
+    testInfixExpression(array.elements[2], 3, "+", 3);
+  });
+
   it("prefix expression", () => {
     const tests = [
       { input: "!5;", operator: "!", expected: 5 },

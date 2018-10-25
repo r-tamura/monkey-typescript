@@ -22,6 +22,7 @@ describe("Lexer", () => {
     10 != 9;
     "foobar"
     "foo bar"
+    [1, 2];
     `;
 
     const tests: Array<{ expectedType: TokenType; expectedLiteral: string }> = [
@@ -107,8 +108,16 @@ describe("Lexer", () => {
       { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
 
       // Strings
-      { expectedType: Tokens.STRING, expectedLiteral: "foobar"},
-      { expectedType: Tokens.STRING, expectedLiteral: "foo bar"},
+      { expectedType: Tokens.STRING, expectedLiteral: "foobar" },
+      { expectedType: Tokens.STRING, expectedLiteral: "foo bar" },
+
+      // Array
+      { expectedType: Tokens.LBRACKET, expectedLiteral: "[" },
+      { expectedType: Tokens.INT, expectedLiteral: "1" },
+      { expectedType: Tokens.COMMA, expectedLiteral: "," },
+      { expectedType: Tokens.INT, expectedLiteral: "2" },
+      { expectedType: Tokens.RBRACKET, expectedLiteral: "]" },
+      { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
 
       { expectedType: Tokens.EOF, expectedLiteral: "" }
     ];
