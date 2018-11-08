@@ -12,7 +12,8 @@ enum Precedences {
   SUM,
   PRODUCT,
   PREFIX,
-  CALL
+  CALL,
+  INDEX // Array[array]
 }
 
 const PrecedenceMap = new Map<TokenType, number>([
@@ -28,7 +29,8 @@ const PrecedenceMap = new Map<TokenType, number>([
   [Tokens.ASTERISK, Precedences.PRODUCT],
   [Tokens.SLASH, Precedences.PRODUCT],
 
-  [Tokens.LPAREN, Precedences.CALL]
+  [Tokens.LPAREN, Precedences.CALL],
+  [Tokens.LBRACKET, Precedences.INDEX]
 ]);
 
 class Parser {
@@ -70,6 +72,7 @@ class Parser {
     this.registerInfix(Tokens.EQ, this.parseInfixExpression);
     this.registerInfix(Tokens.NOT_EQ, this.parseInfixExpression);
     this.registerInfix(Tokens.LPAREN, this.parseCallExpression);
+    this.registerInfix(Tokens.LBRACKET, this.parseIndexExpression);
   }
 
   static of(l: Lexer) {
@@ -384,6 +387,19 @@ class Parser {
     }
 
     return list;
+  };
+
+  private parseIndexExpression = (left: ast.Expression): ast.Expression => {
+    const exp = ast.IndexExpression.of({ token: this.curToken, left: left });
+
+    this.nextToken();
+    exp.index = this.parseExpression(Precedences.LOWEST);
+
+    if (!this.expectPeek(Tokens.RBRACKET)) {
+      return null;
+    }
+
+    return exp;
   };
 
   private nextToken() {

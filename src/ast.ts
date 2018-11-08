@@ -265,7 +265,7 @@ class ArrayLiteral implements Expression, ArrayProps {
   toString(): string {
     return (
       "[" +
-      this.elements.reduce((acc, e) => acc + ", " + e.toString(), "") +
+      this.elements.map(e => e.toString()).reduce((acc, e) => acc + ", " + e) +
       "]"
     );
   }
@@ -441,6 +441,35 @@ class CallExpression implements Expression, CallExpressionProps {
   expressionNode() {}
 }
 
+interface IndexExpressionProps {
+  token?: Token;
+  left?: Expression;
+  index?: Expression; // Indexも式になりうる [1, 2, 3][1 + 1] など
+}
+
+class IndexExpression implements Expression, IndexExpressionProps {
+  token?: Token;
+  left?: Expression;
+  index?: Expression;
+
+  static of({ token, left, index }: IndexExpressionProps): IndexExpression {
+    const exp = new IndexExpression();
+    exp.token = token;
+    exp.left = left;
+    exp.index = index;
+    return exp;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+  toString(): string {
+    return "(" + this.left.toString() + "[" + this.index.toString() + "])";
+  }
+
+  expressionNode() {}
+}
+
 export {
   Node,
   Statement,
@@ -455,6 +484,7 @@ export {
   StringLiteral,
   Boolean,
   ArrayLiteral,
+  IndexExpression,
   PrefixExpression,
   InfixExpression,
   IfExpression,

@@ -139,6 +139,15 @@ describe("Parser", () => {
     testInfixExpression(array.elements[2], 3, "+", 3);
   });
 
+  it("index expressions", () => {
+    const input = `myArray[1 + 1]`;
+    const program = testParse(input);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const indexExp = stmt.expression as ast.IndexExpression;
+    testIdentifier(indexExp.left, "myArray");
+    testInfixExpression(indexExp.index, 1, "+", 1);
+  });
+
   it("prefix expression", () => {
     const tests = [
       { input: "!5;", operator: "!", expected: 5 },
@@ -240,6 +249,14 @@ describe("Parser", () => {
       {
         input: "add(a / b, 1 + 2 * 3, 3 + add(3 + 4))",
         expected: "add((a / b), (1 + (2 * 3)), (3 + add((3 + 4))))"
+      },
+      {
+        input: "a * [1, 2, 3, 4][b * c] * d",
+        expected: "((a * ([1, 2, 3, 4][(b * c)])) * d)"
+      },
+      {
+        input: "add(a * b[2], b[1], 2 * [1, 2][1])",
+        expected: "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"
       }
     ];
 
