@@ -76,6 +76,12 @@ function evaluate(node: ast.Node, env: Environment): obj.Obj {
     }
 
     return applyFunction(func, args);
+  } else if (node instanceof ast.ArrayLiteral) {
+    const elements = evalExpressions(node.elements, env);
+    if (elements.length === 1 && isError(elements[0])) {
+      return elements[0];
+    }
+    return obj.Arr.of({ elements });
   }
 
   return null;

@@ -253,6 +253,16 @@ describe("Evaluator", () => {
       }
     });
   });
+
+  it("array literals", () => {
+    const input = `[1, 2 * 2, 3 + 3]`;
+    const evaluated = testEval(input);
+    const result = evaluated as obj.Arr;
+    assert.equal(result.elements.length, 3);
+    testIntegerObject(result.elements[0], 1);
+    testIntegerObject(result.elements[1], 4);
+    testIntegerObject(result.elements[2], 6);
+  });
 });
 
 function testEval(input: string): obj.Obj {

@@ -11,7 +11,8 @@ enum ObjTypes {
   RETURN_VALUE = "RETURN_VALUE",
   ERROR = "ERROR",
   FUNCTION = "FUNCTION",
-  BUILTIN = "BUILTIN"
+  BUILTIN = "BUILTIN",
+  ARRAY = "ARRAY"
 }
 
 // JavaScriptでObject型が既に定義されているためObjとする
@@ -164,6 +165,23 @@ class Builtin implements Obj {
     return "builtin function";
   }
 }
+// JavaScriptでArray型が既に定義されているためArrとする
+class Arr implements Obj {
+  elements: Obj[];
+
+  static of({ elements }: { elements: Obj[] }) {
+    const a = new Arr();
+    a.elements = elements;
+    return a;
+  }
+
+  type(): ObjectType {
+    return ObjTypes.BUILTIN;
+  }
+  inspect(): string {
+    return "[" + this.elements.map(e => e.inspect()).join(",") + "]";
+  }
+}
 
 export {
   ObjTypes,
@@ -176,5 +194,6 @@ export {
   Err,
   Func,
   Builtin,
-  BuiltinFunction
+  BuiltinFunction,
+  Arr
 };
