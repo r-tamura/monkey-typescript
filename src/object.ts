@@ -176,7 +176,7 @@ class Arr implements Obj {
   }
 
   type(): ObjectType {
-    return ObjTypes.BUILTIN;
+    return ObjTypes.ARRAY;
   }
   inspect(): string {
     return "[" + this.elements.map(e => e.inspect()).join(",") + "]";

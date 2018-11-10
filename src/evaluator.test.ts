@@ -4,6 +4,8 @@ import { Parser } from "./parser";
 import { Lexer } from "./lexer";
 import { evaluate, NULL } from "./evaluator";
 import { newEnvironment } from "./environment";
+import { stringify } from "querystring";
+import { resolveAny } from "dns";
 
 interface Test {
   input: string;
@@ -262,6 +264,58 @@ describe("Evaluator", () => {
     testIntegerObject(result.elements[0], 1);
     testIntegerObject(result.elements[1], 4);
     testIntegerObject(result.elements[2], 6);
+  });
+
+  it("array index expression", () => {
+    const tests: {
+      input: string;
+      expected: any;
+    }[] = [
+      {
+        input: "[1, 2, 3][0]",
+        expected: 1
+      },
+      {
+        input: "[1, 2, 3][1]",
+        expected: 2
+      },
+      {
+        input: "[1, 2, 3][2]",
+        expected: 3
+      },
+      {
+        input: "let i = 0; [1, 2, 3][i]",
+        expected: 1
+      },
+      {
+        input: "let myArray = [1, 2, 3]; myArray[2]",
+        expected: 3
+      },
+      {
+        input: "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2]",
+        expected: 6
+      },
+      {
+        input: "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]",
+        expected: 2
+      },
+      {
+        input: "[1, 2, 3][3]; ",
+        expected: null
+      },
+      {
+        input: "[1, 2, 3][-1]",
+        expected: null
+      }
+    ];
+    tests.forEach(tt => {
+      const evaluated = testEval(tt.input);
+      if (typeof tt.expected === "number") {
+        testIntegerObject(evaluated, tt.expected);
+      } else {
+        testNullObject(evaluated);
+      }
+    });
   });
 });
 

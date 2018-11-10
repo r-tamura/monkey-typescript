@@ -82,6 +82,17 @@ function evaluate(node: ast.Node, env: Environment): obj.Obj {
       return elements[0];
     }
     return obj.Arr.of({ elements });
+  } else if (node instanceof ast.IndexExpression) {
+    const left = evaluate(node.left, env);
+    if (isError(left)) {
+      return left;
+    }
+
+    const index = evaluate(node.index, env);
+    if (isError(index)) {
+      return index;
+    }
+    return evalIndexExpression(left, index);
   }
 
   return null;
@@ -250,6 +261,28 @@ function evalIfExpression(ie: ast.IfExpression, env: Environment): obj.Obj {
   } else {
     return NULL;
   }
+}
+
+function evalIndexExpression(left: obj.Obj, index: obj.Obj): obj.Obj {
+  if (
+    left.type() === obj.ObjTypes.ARRAY &&
+    index.type() === obj.ObjTypes.INTEGER
+  ) {
+    return evalArrayIndexExpression(left, index);
+  }
+  return newError("index operator not supported: %s", left.type());
+}
+
+function evalArrayIndexExpression(left: obj.Obj, index: obj.Obj): obj.Obj {
+  const arrObject = left as obj.Arr;
+  const idx = index as obj.Integer;
+  const max = arrObject.elements.length - 1;
+
+  if (idx.value < 0 || idx.value > max) {
+    return NULL;
+  }
+
+  return arrObject.elements[idx.value];
 }
 
 function evalIdentifier(node: ast.Identifier, env: Environment): obj.Obj {
