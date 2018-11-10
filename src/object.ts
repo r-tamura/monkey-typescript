@@ -148,7 +148,7 @@ class Func implements Obj {
   }
 }
 
-type BuiltinFunction = (...args: any) => Obj;
+type BuiltinFunction = (...args: any[]) => Obj;
 class Builtin implements Obj {
   fn: BuiltinFunction;
 

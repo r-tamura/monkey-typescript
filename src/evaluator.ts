@@ -9,7 +9,9 @@ const TRUE = obj.Boolean.of({ value: true });
 const FALSE = obj.Boolean.of({ value: false });
 
 const builtins = {
-  len: getBuiltinByName("len")
+  len: getBuiltinByName("len"),
+  first: getBuiltinByName("first"),
+  last: getBuiltinByName("last")
 };
 
 function evaluate(node: ast.Node, env: Environment): obj.Obj {
