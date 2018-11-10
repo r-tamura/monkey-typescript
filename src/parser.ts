@@ -61,6 +61,7 @@ class Parser {
     this.registerPrefix(Tokens.FUNCTION, this.parseFunctionLiteral);
     this.registerPrefix(Tokens.STRING, this.parseStringLiteral);
     this.registerPrefix(Tokens.LBRACKET, this.parseArrayLiteral);
+    this.registerPrefix(Tokens.LBRACE, this.parseHashLiteral);
 
     this.infixParseFns = {};
     this.registerInfix(Tokens.PLUS, this.parseInfixExpression);
@@ -249,6 +250,32 @@ class Parser {
     return array;
   };
 
+  private parseHashLiteral = (): ast.HashLiteral => {
+    const hash = ast.HashLiteral.of({ token: this.curToken });
+    hash.pairs = new Map<ast.Expression, ast.Expression>();
+    while (!this.peekTokenIs(Tokens.RBRACE)) {
+      this.nextToken();
+      const key = this.parseExpression(Precedences.LOWEST);
+      if (!this.expectPeek(Tokens.COLON)) {
+        return null;
+      }
+
+      this.nextToken();
+      const value = this.parseExpression(Precedences.LOWEST);
+      hash.pairs.set(key, value);
+
+      if (!this.peekTokenIs(Tokens.RBRACE) && !this.expectPeek(Tokens.COMMA)) {
+        return null;
+      }
+    }
+
+    if (!this.expectPeek(Tokens.RBRACE)) {
+      return null;
+    }
+
+    return hash;
+  };
+
   private parsePrefixExpression = (): ast.Expression => {
     const exp = ast.PrefixExpression.of({
       token: this.curToken,
@@ -293,7 +320,7 @@ class Parser {
 
     if (this.peekTokenIs(Tokens.ELSE)) {
       this.nextToken();
-      if (!this.peekTokenIs(Tokens.LBRACE)) {
+      if (!this.expectPeek(Tokens.LBRACE)) {
         return null;
       }
       expression.alternative = this.parseBlockStatement();

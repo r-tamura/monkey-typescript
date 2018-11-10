@@ -139,6 +139,65 @@ describe("Parser", () => {
     testInfixExpression(array.elements[2], 3, "+", 3);
   });
 
+  it("hash literal", () => {
+    const input = `{"one": 1, "two": 2, "three": 3}`;
+    const program = testParse(input);
+
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const hash = stmt.expression as ast.HashLiteral;
+    const entries = Array.from(hash.pairs.entries());
+    assert.equal(
+      entries.length,
+      3,
+      `hash.Pairs has wrong length. got=${entries.length}`
+    );
+
+    const expected = {
+      one: 1,
+      two: 2,
+      three: 3
+    };
+
+    entries.forEach(([k, v]) => {
+      testIntegerLiteral(v, expected[k.toString()]);
+    });
+  });
+
+  it("empty hash literal", () => {
+    const input = `{}`;
+    const program = testParse(input);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const hash = stmt.expression as ast.HashLiteral;
+    const entries = Array.from(hash.pairs.entries());
+    assert.equal(
+      entries.length,
+      0,
+      `hash.Pairs has wrong length. got=${entries.length}`
+    );
+  });
+
+  it("hash literal with expressions", () => {
+    const input = `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}`;
+    const program = testParse(input);
+    const stmt = program.statements[0] as ast.ExpressionStatement;
+    const hash = stmt.expression as ast.HashLiteral;
+    const entries = Array.from(hash.pairs.entries());
+    assert.equal(
+      entries.length,
+      3,
+      `hash.Pairs has wrong length. got=${entries.length}`
+    );
+    const expected = {
+      one: e => testInfixExpression(e, 0, "+", 1),
+      two: e => testInfixExpression(e, 10, "-", 8),
+      three: e => testInfixExpression(e, 15, "/", 5)
+    };
+
+    entries.forEach(([k, v]) => {
+      expected[k.toString()](v);
+    });
+  });
+
   it("index expressions", () => {
     const input = `myArray[1 + 1]`;
     const program = testParse(input);

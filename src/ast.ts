@@ -273,6 +273,36 @@ class ArrayLiteral implements Expression, ArrayProps {
   expressionNode() {}
 }
 
+interface HashProps {
+  token?: Token;
+  pairs?: Map<Expression, Expression>;
+}
+
+class HashLiteral implements Expression, ArrayProps {
+  token: Token;
+  pairs: Map<Expression, Expression>;
+
+  static of({ token, pairs }: HashProps): HashLiteral {
+    const array = new HashLiteral();
+    array.token = token;
+    array.pairs = pairs;
+    return array;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+  toString(): string {
+    const pairs = [];
+    for (const [k, v] of this.pairs.entries()) {
+      pairs.push(`${k.toString()}:${v.toString()}`);
+    }
+    return "{" + pairs.join(", ") + "}";
+  }
+
+  expressionNode() {}
+}
+
 interface PrefixExpressionProps {
   token?: Token;
   operator?: string;
@@ -484,6 +514,7 @@ export {
   StringLiteral,
   Boolean,
   ArrayLiteral,
+  HashLiteral,
   IndexExpression,
   PrefixExpression,
   InfixExpression,

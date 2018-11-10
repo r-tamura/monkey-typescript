@@ -23,6 +23,7 @@ describe("Lexer", () => {
     "foobar"
     "foo bar"
     [1, 2];
+    {"foo": "bar"}
     `;
 
     const tests: Array<{ expectedType: TokenType; expectedLiteral: string }> = [
@@ -118,6 +119,13 @@ describe("Lexer", () => {
       { expectedType: Tokens.INT, expectedLiteral: "2" },
       { expectedType: Tokens.RBRACKET, expectedLiteral: "]" },
       { expectedType: Tokens.SEMICOLON, expectedLiteral: ";" },
+
+      // Hashes
+      { expectedType: Tokens.LBRACE, expectedLiteral: "{" },
+      { expectedType: Tokens.STRING, expectedLiteral: "foo" },
+      { expectedType: Tokens.COLON, expectedLiteral: ":" },
+      { expectedType: Tokens.STRING, expectedLiteral: "bar" },
+      { expectedType: Tokens.RBRACE, expectedLiteral: "}" },
 
       { expectedType: Tokens.EOF, expectedLiteral: "" }
     ];
