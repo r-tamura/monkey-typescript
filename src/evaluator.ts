@@ -84,6 +84,8 @@ function evaluate(node: ast.Node, env: Environment): obj.Obj {
       return elements[0];
     }
     return obj.Arr.of({ elements });
+  } else if (node instanceof ast.HashLiteral) {
+    return evalHashLiteral(node, env);
   } else if (node instanceof ast.IndexExpression) {
     const left = evaluate(node.left, env);
     if (isError(left)) {
@@ -96,7 +98,6 @@ function evaluate(node: ast.Node, env: Environment): obj.Obj {
     }
     return evalIndexExpression(left, index);
   }
-
   return null;
 }
 
@@ -249,6 +250,28 @@ function evalStringInfixExpression(
   return obj.Str.of({ value: leftVal + rightVal });
 }
 
+function evalHashLiteral(node: ast.HashLiteral, env: Environment): obj.Obj {
+  const pairs = new Map<obj.SerializedHashKey, obj.HashPair>();
+  for (const [keyNode, valueNode] of node.pairs) {
+    const key = evaluate(keyNode, env);
+    if (isError(key)) {
+      return key;
+    }
+    const value = evaluate(valueNode, env);
+    if (isError(value)) {
+      return value;
+    }
+
+    const hashKey = (key as
+      | obj.Str
+      | obj.Integer
+      | obj.Boolean) as obj.Hashable;
+    const hashed = hashKey.hashkey().seriarize();
+    pairs.set(hashed, { key, value });
+  }
+  return obj.Hash.of({ pairs });
+}
+
 function evalIfExpression(ie: ast.IfExpression, env: Environment): obj.Obj {
   const condition = evaluate(ie.condition, env);
 
@@ -271,6 +294,8 @@ function evalIndexExpression(left: obj.Obj, index: obj.Obj): obj.Obj {
     index.type() === obj.ObjTypes.INTEGER
   ) {
     return evalArrayIndexExpression(left, index);
+  } else if (left.type() === obj.ObjTypes.HASH) {
+    return evalHashIndexExpression(left, index);
   }
   return newError("index operator not supported: %s", left.type());
 }
@@ -285,6 +310,17 @@ function evalArrayIndexExpression(left: obj.Obj, index: obj.Obj): obj.Obj {
   }
 
   return arrObject.elements[idx.value];
+}
+
+function evalHashIndexExpression(left: obj.Obj, index: obj.Obj): obj.Obj {
+  const hashObject = left as obj.Hash;
+  const idx = index as obj.Integer | obj.Str | obj.Boolean;
+
+  const hashkey = idx.hashkey().seriarize();
+  if (hashObject.pairs.has(hashkey)) {
+    return hashObject.pairs.get(hashkey).value;
+  }
+  return NULL;
 }
 
 function evalIdentifier(node: ast.Identifier, env: Environment): obj.Obj {

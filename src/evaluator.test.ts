@@ -2,10 +2,9 @@ import assert = require("power-assert");
 import * as obj from "./object";
 import { Parser } from "./parser";
 import { Lexer } from "./lexer";
-import { evaluate, NULL } from "./evaluator";
+import { evaluate, NULL, TRUE, FALSE } from "./evaluator";
 import { newEnvironment } from "./environment";
 import { stringify } from "querystring";
-import { resolveAny } from "dns";
 
 interface Test {
   input: string;
@@ -317,6 +316,104 @@ describe("Evaluator", () => {
       }
     });
   });
+
+  it("hash literals", () => {
+    const input = `let two = "two";
+    {
+      "one": 10 - 9,
+      two: 1 + 1,
+      "thr" + "ee": 6 / 2,
+      4: 4,
+      true: 5,
+      false: 6
+    }
+    `;
+    const evaluated = testEval(input);
+    const result = evaluated as obj.Hash;
+    const expected = new Map<string, number>([
+      [
+        obj.Str.of({ value: "one" })
+          .hashkey()
+          .seriarize(),
+        1
+      ],
+      [
+        obj.Str.of({ value: "two" })
+          .hashkey()
+          .seriarize(),
+        2
+      ],
+      [
+        obj.Str.of({ value: "three" })
+          .hashkey()
+          .seriarize(),
+        3
+      ],
+      [
+        obj.Integer.of({ value: 4 })
+          .hashkey()
+          .seriarize(),
+        4
+      ],
+      [TRUE.hashkey().seriarize(), 5],
+      [FALSE.hashkey().seriarize(), 6]
+    ]);
+
+    Array.from(expected.entries()).forEach(([k, v]) => {
+      assert(result.pairs.has(k), "no pair for given key in Pairs");
+      const pair = result.pairs.get(k);
+      testIntegerObject(pair.value, v);
+    });
+  });
+
+  it("hash index expression", () => {
+    const tests: {
+      input: string;
+      expected: any;
+    }[] = [
+      {
+        input: `{"foo": 5}["foo"]`,
+        expected: 5
+      },
+      {
+        input: `{"foo": 5}["bar"]`,
+        expected: null
+      },
+      {
+        input: `let key = "foo"; {"foo": 5}[key]`,
+        expected: 5
+      },
+      {
+        input: `{}["foo"]`,
+        expected: null
+      },
+      {
+        input: `{6: 5}[6]`,
+        expected: 5
+      },
+      {
+        input: `{true: 5}[true]`,
+        expected: 5
+      },
+      {
+        input: `{false: 5}[false]`,
+        expected: 5
+      }
+    ];
+
+    tests.forEach(tt => {
+      const evaluated = testEval(tt.input);
+      switch (typeof tt.expected) {
+        case "number":
+          const integer = evaluated as obj.Integer;
+          testIntegerObject(integer, tt.expected);
+          return;
+        default:
+          testNullObject(evaluated);
+          return;
+      }
+    });
+  });
 });
 
 function testEval(input: string): obj.Obj {
@@ -329,14 +426,14 @@ function testEval(input: string): obj.Obj {
 
 function testIntegerObject(o: obj.Obj, expected: number) {
   const result = o as obj.Integer;
-  assert.equal(result.value, expected);
+  assert.equal(result.value, expected, `want=${expected}, got=${result.value}`);
 }
 
 function testBooleanObject(o: obj.Obj, expected: boolean) {
   const result = o as obj.Boolean;
-  assert.equal(result.value, expected);
+  assert.equal(result.value, expected, `want=${expected}, got=${result.value}`);
 }
 
 function testNullObject(o: obj.Obj) {
-  assert.equal(o, NULL);
+  assert.equal(o, NULL, `want=null, got=${o.inspect()}`);
 }

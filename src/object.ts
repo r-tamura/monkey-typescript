@@ -12,7 +12,8 @@ enum ObjTypes {
   ERROR = "ERROR",
   FUNCTION = "FUNCTION",
   BUILTIN = "BUILTIN",
-  ARRAY = "ARRAY"
+  ARRAY = "ARRAY",
+  HASH = "HASH"
 }
 
 // JavaScriptでObject型が既に定義されているためObjとする
@@ -21,7 +22,25 @@ interface Obj {
   inspect(): string;
 }
 
-class Integer implements Obj {
+// Memo:
+// JavaScriptではMapのキーがポインタ比較なので
+// Primitive型へシリアライズする必要がある
+// SerializedHashKey型はJavaScriptのみ特別に用意
+const seriarize = function(): SerializedHashKey {
+  return `${this.type.toUpperCase()}$$$${this.value}`;
+};
+type SerializedHashKey = string;
+interface HashKey {
+  type: ObjectType;
+  value: number;
+  seriarize: () => string;
+}
+
+interface Hashable {
+  hashkey: () => HashKey;
+}
+
+class Integer implements Obj, Hashable {
   value: number;
 
   static of({ value }: { value: number }) {
@@ -36,10 +55,18 @@ class Integer implements Obj {
   inspect(): string {
     return this.value.toString(10);
   }
+
+  hashkey() {
+    return {
+      type: this.type(),
+      value: this.value,
+      seriarize
+    };
+  }
 }
 
 // JavaScriptでStringr型が既に定義されているためStrとする
-class Str implements Obj {
+class Str implements Obj, Hashable {
   value: string;
 
   static of({ value }: { value: string }) {
@@ -54,9 +81,17 @@ class Str implements Obj {
   inspect(): string {
     return this.value;
   }
+
+  hashkey() {
+    return {
+      type: this.type(),
+      value: Buffer.from(this.value).reduce((acc, b) => acc + b),
+      seriarize
+    };
+  }
 }
 
-class Boolean implements Obj {
+class Boolean implements Obj, Hashable {
   value: boolean;
 
   static of({ value }: { value: boolean }) {
@@ -70,6 +105,14 @@ class Boolean implements Obj {
   }
   inspect(): string {
     return this.value.toString();
+  }
+
+  hashkey() {
+    return {
+      type: this.type(),
+      value: this.value ? 1 : 0,
+      seriarize
+    };
   }
 }
 
@@ -183,6 +226,37 @@ class Arr implements Obj {
   }
 }
 
+// Hashに関して、単純なMap<Object, Object>で実装しないのは
+// Go言語のmapの挙動に合わせるため
+// Go言語ではHash key比較の際にポインタでの比較が行われるため
+// 同じkey値でも参照先が異なる場合はうまくヒットしない
+// JavaScriptでは違う参照先の文字列でもヒットするが、
+// とりあえず実装は同じように合わせておく
+class HashPair {
+  key: Obj;
+  value: Obj;
+}
+class Hash implements Obj {
+  pairs: Map<SerializedHashKey, HashPair>;
+
+  static of({ pairs }: { pairs: Map<SerializedHashKey, HashPair> }) {
+    const h = new Hash();
+    h.pairs = pairs;
+    return h;
+  }
+
+  type(): ObjectType {
+    return ObjTypes.HASH;
+  }
+  inspect(): string {
+    const pairs = [];
+    for (const [hk, { key, value }] of this.pairs.entries()) {
+      pairs.push(`${key.inspect()}: ${value.inspect()}`);
+    }
+    return "[" + pairs.join(", ") + "]";
+  }
+}
+
 export {
   ObjTypes,
   Obj,
@@ -195,5 +269,10 @@ export {
   Func,
   Builtin,
   BuiltinFunction,
-  Arr
+  Arr,
+  Hashable,
+  HashKey,
+  SerializedHashKey,
+  HashPair,
+  Hash
 };
