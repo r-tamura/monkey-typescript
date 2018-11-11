@@ -130,6 +130,15 @@ const builtins: {
         return obj.Arr.of({ elements: res });
       }
     })
+  },
+  {
+    name: "puts",
+    builtin: obj.Builtin.of({
+      fn: (...args: obj.Obj[]): obj.Obj => {
+        args.forEach(arg => console.log(arg.inspect()));
+        return NULL;
+      }
+    })
   }
 ];
 
