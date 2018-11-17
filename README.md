@@ -4,8 +4,11 @@ An implementation of interpreter for monkey
 # Development
 
 ```
-# test
-$ yarn test
+# Run one test of categoies
+yarn test ./src/code.test.ts
+
+# Run all test
+$ yarn test:all
 
 # start REPL
 $ yarn start

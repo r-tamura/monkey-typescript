@@ -4,7 +4,6 @@ import { Parser } from "./parser";
 import { Lexer } from "./lexer";
 import { evaluate, NULL, TRUE, FALSE } from "./evaluator";
 import { newEnvironment } from "./environment";
-import { stringify } from "querystring";
 
 interface Test {
   input: string;

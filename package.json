@@ -9,7 +9,8 @@
     "start": "run-s build repl",
     "repl": "node ./bin/index.js",
     "build": "webpack",
-    "test": "ts-mocha src/*.test.ts",
+    "test": "ts-mocha",
+    "test:all": "ts-mocha src/*.test.ts",
     "precommit": "pretty-quick --staged"
   },
   "devDependencies": {
