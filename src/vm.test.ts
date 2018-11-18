@@ -15,7 +15,7 @@ describe("VM", () => {
     const tests: VmTestCase[] = [
       { input: "1", expected: 1 },
       { input: "2", expected: 2 },
-      { input: "1 + 2", expected: 2 } // FIX ME
+      { input: "1 + 2", expected: 3 }
     ];
     runVmTests(tests);
   });

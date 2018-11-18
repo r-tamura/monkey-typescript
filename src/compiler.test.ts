@@ -22,7 +22,8 @@ describe("Compiler", () => {
         expectedConstants: [1, 2],
         expectedInstructions: [
           code.make(ops.constant, 0),
-          code.make(ops.constant, 1)
+          code.make(ops.constant, 1),
+          code.make(ops.add)
         ]
       }
     ];

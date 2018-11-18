@@ -37,6 +37,14 @@ class VM {
           if (err) {
             return err;
           }
+          break;
+        case ops.add:
+          const r = this.pop();
+          const l = this.pop();
+          const rv = (r as obj.Integer).value;
+          const lv = (l as obj.Integer).value;
+          this.push(obj.Integer.of({ value: rv + lv }));
+          break;
       }
     }
     return null;
@@ -49,6 +57,11 @@ class VM {
     this.stack[this.sp] = o;
     this.sp++;
     return null;
+  }
+
+  pop(): obj.Obj {
+    this.sp--;
+    return this.stack[this.sp];
   }
 
   stackTop(): obj.Obj {

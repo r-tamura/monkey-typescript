@@ -14,6 +14,11 @@ describe("code", () => {
         op: code.Opcodes.constant,
         operands: [65534],
         expected: Buffer.of(ops.constant, 0xff, 0xfe)
+      },
+      {
+        op: code.Opcodes.add,
+        operands: [],
+        expected: Buffer.of(ops.add)
       }
     ];
 
@@ -39,14 +44,14 @@ describe("code", () => {
 
   it("instruction string", () => {
     const instructions: code.Instructions[] = [
-      code.make(ops.constant, 1),
+      code.make(ops.add, 1),
       code.make(ops.constant, 2),
       code.make(ops.constant, 65535)
     ];
 
-    const expected = `0000 OpConstant 1
-0003 OpConstant 2
-0006 OpConstant 65535`;
+    const expected = `0000 OpAdd
+0001 OpConstant 2
+0004 OpConstant 65535`;
     const concatted = code.Instructions.concat(...instructions);
     assert.equal(
       concatted.toString(),

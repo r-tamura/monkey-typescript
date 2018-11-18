@@ -1,8 +1,19 @@
 type Opcode = number;
 
 enum Opcodes {
-  constant = 1
+  constant = 1,
+  add
 }
+
+interface Definition {
+  name: string;
+  operandWidths: number[];
+}
+
+const definitions: { [key: number]: Definition } = {
+  [Opcodes.constant]: { name: "OpConstant", operandWidths: [2] },
+  [Opcodes.add]: { name: "OpAdd", operandWidths: [] }
+};
 
 class Instructions {
   buf: Buffer;
@@ -48,6 +59,8 @@ class Instructions {
     }
 
     switch (count) {
+      case 0:
+        return def.name;
       case 1:
         return `${def.name} ${operands[0]}`;
     }
@@ -77,15 +90,6 @@ class Instructions {
     this.buf.forEach(fn);
   }
 }
-
-interface Definition {
-  name: string;
-  operandWidths: number[];
-}
-
-const definitions: { [key: number]: Definition } = {
-  [Opcodes.constant]: { name: "OpConstant", operandWidths: [2] }
-};
 
 function lookup(op: Opcode): Definition {
   const def = definitions[op];

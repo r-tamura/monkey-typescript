@@ -48,6 +48,14 @@ class Compiler implements CompilerProps {
         if (err) {
           return err;
         }
+
+        switch (ie.operator) {
+          case "+":
+            this.emit(ops.add);
+            break;
+          default:
+            return new Error(`unknown operator ${ie.operator}`);
+        }
         break;
       case ast.IntegerLiteral:
         const i = node as ast.IntegerLiteral;
