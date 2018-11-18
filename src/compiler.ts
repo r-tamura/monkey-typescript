@@ -88,4 +88,4 @@ interface Bytecode {
   constants: obj.Obj[];
 }
 
-export { Compiler };
+export { Compiler, Bytecode };

@@ -1,6 +1,5 @@
 import * as assert from "power-assert";
 import * as code from "./code";
-import { InspectOptions } from "util";
 
 const ops = code.Opcodes;
 

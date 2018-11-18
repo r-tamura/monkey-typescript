@@ -145,7 +145,7 @@ function readOperands(
   return [operands, offset];
 }
 
-function readUInt16(ins: Instructions, offset: number): number {
+function readUInt16(ins: Instructions, offset: number = 0): number {
   return ins.buf.readUInt16BE(offset);
 }
 
@@ -157,5 +157,6 @@ export {
   definitions,
   lookup,
   make,
-  readOperands
+  readOperands,
+  readUInt16
 };
